@@ -34,8 +34,10 @@ The Vite `base` in `vite.config.ts` is currently `/gtd-hub-demo/`. If the GitHub
 1. Create a GitHub repository named `gtd-hub-demo` (or update the Vite base to match your repository name).
 2. Push this project to the repository.
 3. In GitHub, open **Settings → Pages** and select **GitHub Actions** as the build/deployment source.
-4. Add `.github/workflows/deploy.yml` from this project (provided below in the repository after setup), or use the included workflow if present.
+4. Ensure `.github/workflows/deploy.yml` is committed (it is included in this project).
 5. Push to `main`; GitHub Actions builds and publishes `dist/`.
+6. In **Settings → Pages**, confirm the deployment source is **GitHub Actions**.
+7. Open the published URL after the workflow completes successfully.
 
 ## Product areas demonstrated
 
