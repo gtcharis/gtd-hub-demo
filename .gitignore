@@ -1,6 +1,9 @@
 node_modules/
 dist/
 .env
+.env.*
+!.env.example
+audit-report.json
 .venv/
 __pycache__/
 .pytest_cache/
