@@ -292,7 +292,7 @@ export default function App() {
   if (authLoading) {
     return <div className="auth-loading">Loading your GTD Hub workspace…</div>;
   }
-  if (page === "Welcome" && !user)
+  if (page === "Welcome" && pathname !== "/login" && !user)
     return <Welcome onStart={() => navigate("/login")} />;
   if (pathname === "/login" && !user) {
     return (
