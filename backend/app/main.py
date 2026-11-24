@@ -3,10 +3,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.api.auth_routes import router as auth_router
+from app.api.mentorship_routes import router as mentorship_router
 
 app = FastAPI(
     title="GTD Hub Demonstrator API",
-    version="0.2.5",
+    version="0.3.0",
     description="Authenticated proposal demonstrator API. Fictional demonstration data only.",
 )
 origins = [x.strip() for x in os.getenv(
@@ -21,3 +22,4 @@ app.add_middleware(
 )
 app.include_router(router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(mentorship_router, prefix="/api/v1")

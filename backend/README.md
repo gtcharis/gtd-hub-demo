@@ -57,3 +57,35 @@ Role permissions are centralised in `app/role_policy.py`.
 ## Deployment
 
 Railway should use `/backend` as the service root directory and the included Dockerfile. The Dockerfile applies Alembic migrations before starting Uvicorn.
+
+
+## v0.3.0 Mentorship workflow
+
+Apply the new migration before starting the API:
+
+```powershell
+alembic upgrade head
+```
+
+Then run the idempotent demo seed command to add three fictional mentor profiles and their mentor accounts:
+
+```powershell
+python -m app.seed_demo_users
+```
+
+The existing six primary demo accounts remain available. The additional fictional mentor accounts are:
+- `mentor@gtdhub.demo` (existing primary Mentor account)
+- `tncube@gtdhub.demo`
+- `fdlamini@gtdhub.demo`
+
+They use the configured `DEMO_DEFAULT_PASSWORD` (or the demonstrator default). Use fictional records only.
+
+New endpoints:
+- `GET /api/v1/mentorship/mentors`
+- `POST /api/v1/mentorship/requests`
+- `GET /api/v1/mentorship/requests`
+- `POST /api/v1/mentorship/requests/{id}/decision`
+- `POST /api/v1/mentorship/requests/{id}/cancel`
+- `GET /api/v1/mentorship/connections`
+
+Members can request mentorship from profiles at their own institution. Mentors can review requests addressed to their own profile. Accepting a request creates an active connection. Programme Administrators can view programme-wide mentorship records.

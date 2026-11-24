@@ -41,3 +41,46 @@ class UserSession(Base):
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     user: Mapped[User] = relationship(back_populates="sessions")
+
+
+class MentorProfile(Base):
+    __tablename__ = "mentor_profiles"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
+    institution_id: Mapped[int] = mapped_column(ForeignKey("institutions.id"), index=True)
+    title: Mapped[str] = mapped_column(String(120), nullable=False)
+    discipline: Mapped[str] = mapped_column(String(120), nullable=False)
+    bio: Mapped[str] = mapped_column(String(1200), nullable=False)
+    expertise: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    accepting_requests: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    user: Mapped[User] = relationship()
+    institution: Mapped[Institution] = relationship()
+
+
+class MentorshipRequest(Base):
+    __tablename__ = "mentorship_requests"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    member_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    mentor_profile_id: Mapped[int] = mapped_column(ForeignKey("mentor_profiles.id", ondelete="CASCADE"), index=True)
+    message: Mapped[str] = mapped_column(String(2000), nullable=False)
+    goals: Mapped[str] = mapped_column(String(1000), nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending", index=True)
+    mentor_response: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    member: Mapped[User] = relationship(foreign_keys=[member_user_id])
+    mentor_profile: Mapped[MentorProfile] = relationship()
+
+
+class MentorshipConnection(Base):
+    __tablename__ = "mentorship_connections"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    request_id: Mapped[int] = mapped_column(ForeignKey("mentorship_requests.id", ondelete="CASCADE"), unique=True, index=True)
+    member_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    mentor_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="active", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    request: Mapped[MentorshipRequest] = relationship()
+    member: Mapped[User] = relationship(foreign_keys=[member_user_id])
+    mentor: Mapped[User] = relationship(foreign_keys=[mentor_user_id])

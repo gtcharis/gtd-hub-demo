@@ -2029,3 +2029,42 @@ select:focus-visible {
   .profile-chip { max-width: 52px; padding: 4px; }
   .profile-chip > span:nth-child(2), .profile-chip > svg { display: none; }
 }
+
+
+/* v0.3.0 mentorship workflow */
+.mentorship-workflow { display: grid; gap: 22px; }
+.mentorship-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:18px; flex-wrap:wrap; }
+.mentorship-heading h1 { margin:7px 0; font-size:clamp(1.8rem,4vw,2.5rem); font-weight:800; color:#111b45; }
+.mentorship-heading p { margin:0; color:#687493; }
+.mentorship-tabs { display:flex; gap:8px; flex-wrap:wrap; border-bottom:1px solid #dce2ef; padding-bottom:10px; }
+.mentorship-tabs button { border:1px solid #dce2ef; border-radius:999px; background:white; color:#263354; padding:9px 15px; font-weight:650; }
+.mentorship-tabs button.active { background:#00685f; color:white; border-color:#00685f; }
+.mentorship-tabs button span { margin-left:5px; opacity:.8; }
+.mentorship-filter { display:flex; align-items:center; gap:8px; border:1px solid #dce2ef; border-radius:12px; background:white; padding:0 12px; color:#66718d; }
+.mentorship-filter select { border:0; outline:0; background:transparent; padding:12px 4px; color:#263354; }
+.mentorship-institution { display:block; color:#687493; margin:0 0 12px; }
+.mentorship-alert { border:1px solid #f0c6c6; background:#fff4f3; color:#8c2525; border-radius:12px; padding:12px 15px; }
+.mentorship-empty { grid-column:1/-1; background:white; border:1px dashed #cbd4e5; border-radius:16px; padding:28px; text-align:center; color:#687493; }
+.mentorship-record-list { display:grid; gap:14px; }
+.mentorship-record { background:white; border:1px solid #dce2ef; border-radius:16px; padding:20px; display:grid; gap:10px; }
+.mentorship-record h3 { margin:5px 0; color:#111b45; font-size:1.1rem; font-weight:750; }
+.mentorship-record p { margin:0; color:#4e5b79; }
+.mentorship-record small { color:#687493; display:flex; align-items:center; gap:6px; }
+.mentorship-record-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.mentorship-status { border-radius:999px; padding:5px 10px; text-transform:capitalize; font-size:.78rem; font-weight:700; background:#f1f3f8; color:#4e5b79; }
+.mentorship-status.status-pending { background:#fff4dc; color:#875b00; }
+.mentorship-status.status-accepted,.mentorship-status.status-active { background:#e3f6ee; color:#08724f; }
+.mentorship-status.status-declined,.mentorship-status.status-cancelled { background:#fcebea; color:#a02d2d; }
+.mentorship-decision { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+.mentorship-decision input { flex:1; min-width:200px; border:1px solid #dce2ef; border-radius:10px; padding:10px 12px; }
+.mentorship-modal-backdrop { position:fixed; inset:0; z-index:100; background:#10173588; display:grid; place-items:center; padding:18px; }
+.mentorship-modal { width:min(100%,560px); max-height:90vh; overflow:auto; background:white; border-radius:20px; padding:24px; display:grid; gap:15px; box-shadow:0 25px 70px #10173544; }
+.mentorship-modal h2 { margin:5px 0; color:#111b45; font-size:1.4rem; font-weight:800; }
+.mentorship-modal label { display:grid; gap:7px; color:#263354; font-weight:650; }
+.mentorship-modal textarea { width:100%; border:1px solid #dce2ef; border-radius:11px; padding:11px 12px; resize:vertical; color:#263354; font-weight:400; }
+.mentorship-modal-actions { display:flex; justify-content:flex-end; gap:9px; }
+@media (max-width:640px) {
+  .mentorship-heading { align-items:flex-start; }
+  .mentorship-decision { display:grid; grid-template-columns:1fr 1fr; }
+  .mentorship-decision input { grid-column:1/-1; }
+}

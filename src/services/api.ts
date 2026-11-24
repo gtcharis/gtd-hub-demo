@@ -2,6 +2,20 @@ import type { AuthUser } from "../features/auth/authTypes";
 
 export type ApiHealth = { status: "ok" | "degraded"; service: string; version: string };
 export type LoginResult = { access_token: string; token_type: "bearer"; expires_at: string; user: AuthUser };
+export type MentorProfile = {
+  id: number; user_id: number; name: string; title: string; discipline: string;
+  bio: string; expertise: string[]; institution_id: number; institution: string;
+  accepting_requests: boolean;
+};
+export type MentorshipRequest = {
+  id: number; mentor_profile_id: number; member_user_id: number; member_name: string;
+  mentor_user_id: number; mentor_name: string; mentor_title: string; message: string;
+  goals: string; status: string; mentor_response: string | null; created_at: string;
+};
+export type MentorshipConnection = {
+  id: number; request_id: number; member_user_id: number; member_name: string;
+  mentor_user_id: number; mentor_name: string; status: string; created_at: string;
+};
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 let authToken: string | null = null;
 
@@ -29,5 +43,14 @@ export const api = {
   health: () => request<ApiHealth>("/api/v1/health"),
   demoOverview: () => request<Record<string, unknown>>("/api/v1/demo/overview"),
   demoMentors: () => request<Array<{ id: string; name: string; field: string; focus: string; institution: string }>>("/api/v1/demo/mentors"),
+  mentorshipMentors: (params = "") => request<MentorProfile[]>(`/api/v1/mentorship/mentors${params}`),
+  mentorshipRequests: () => request<MentorshipRequest[]>("/api/v1/mentorship/requests"),
+  mentorshipConnections: () => request<MentorshipConnection[]>("/api/v1/mentorship/connections"),
+  createMentorshipRequest: (payload: { mentor_profile_id: number; message: string; goals: string }) =>
+    request<MentorshipRequest>("/api/v1/mentorship/requests", { method: "POST", body: JSON.stringify(payload) }),
+  decideMentorshipRequest: (id: number, decision: "accepted" | "declined", response: string) =>
+    request<MentorshipRequest>(`/api/v1/mentorship/requests/${id}/decision`, { method: "POST", body: JSON.stringify({ decision, response }) }),
+  cancelMentorshipRequest: (id: number) =>
+    request<{ id: number; status: string }>(`/api/v1/mentorship/requests/${id}/cancel`, { method: "POST" }),
 };
 export const apiConfigured = Boolean(API_BASE);

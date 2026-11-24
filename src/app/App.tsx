@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Activity,
   ArrowLeft,
@@ -45,7 +45,6 @@ import {
   activities,
   cases,
   discussions,
-  mentors,
   metrics,
   organisations,
   supportOptions,
@@ -58,7 +57,6 @@ import {
   Dashboard,
   Support,
   Reporting,
-  Mentorship,
   Community,
   Learning,
   CaseWorkspace,
@@ -71,6 +69,7 @@ import { useAppRouter } from "./router";
 import { useAuth } from "../features/auth/AuthContext";
 import LoginPage from "../features/auth/LoginPage";
 import Footer from "../components/layout/Footer";
+import MentorshipPage from "../features/mentorship/MentorshipPage";
 
 type Page = string;
 const routeByPage: Record<string, string> = {
@@ -139,21 +138,14 @@ export default function App() {
   const [reportStep, setReportStep] = useState(0);
   const [anonymous, setAnonymous] = useState(true);
   const [consent, setConsent] = useState(false);
-  const [mentorQuery, setMentorQuery] = useState("");
-  const [requested, setRequested] = useState<string[]>([]);
   const [caseStatus, setCaseStatus] = useState<Record<string, string>>({});
   const [selectedCase, setSelectedCase] = useState(cases[0].id);
   const [organisation, setOrganisation] = useState(organisations[1]);
-  const [activeTab, setActiveTab] = useState("All");
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [apiState, setApiState] = useState<
     "local" | "connected" | "unavailable"
   >("local");
   const [apiOverview, setApiOverview] = useState<any>(null);
-  const [mentorList, setMentorList] = useState(mentors);
-  const [mentorSource, setMentorSource] = useState<
-    "local" | "connected" | "unavailable"
-  >("local");
 
   useEffect(() => {
     setMenuOpen(false);
@@ -191,67 +183,6 @@ export default function App() {
       .catch(() => setApiState("unavailable"));
   }, [user?.id]);
 
-  useEffect(() => {
-    if (!apiConfigured || !user) return;
-
-    let active = true;
-
-    api
-      .demoMentors()
-      .then((data) => {
-        if (!active) return;
-
-        const mappedMentors = data.map((mentor) => {
-          const focusParts = mentor.focus
-            .split("·")
-            .map((part) => part.trim())
-            .filter(Boolean);
-
-          const searchableText =
-            `${mentor.field} ${mentor.focus}`.toLowerCase();
-
-          const categories = [
-            "Research",
-            "Career",
-            "Academic",
-            "Leadership",
-            "Wellbeing",
-          ].filter((category) =>
-            searchableText.includes(category.toLowerCase()),
-          );
-
-          return {
-            id: mentor.id,
-            name: mentor.name,
-            role: mentor.field,
-            bio: `${mentor.focus}. Institution: ${mentor.institution}.`,
-            initials: mentor.name
-              .replace(/^(Dr\\.?|Mr\\.?|Mrs\\.?|Ms\\.?|Eng\\.?)\\s*/i, "")
-              .split(/\\s+/)
-              .map((part) => part[0])
-              .join("")
-              .slice(0, 2)
-              .toUpperCase(),
-            tags: [
-              ...new Set([...categories, ...focusParts, mentor.institution]),
-            ],
-          };
-        });
-
-        setMentorList(mappedMentors);
-        setMentorSource("connected");
-      })
-      .catch(() => {
-        if (!active) return;
-        setMentorSource("unavailable");
-        // Keep the existing local mentor records as fallback.
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [user?.id]);
-
   const notify = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2800);
@@ -268,18 +199,6 @@ export default function App() {
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const visibleMentors = useMemo(
-    () =>
-      mentorList.filter(
-        (m) =>
-          `${m.name} ${m.role} ${m.tags.join(" ")}`
-            .toLowerCase()
-            .includes(mentorQuery.toLowerCase()) &&
-          (activeTab === "All" || m.tags.includes(activeTab)),
-      ),
-    [mentorList, mentorQuery, activeTab],
-  );
-
   (window as any).onbeforeinstallprompt = (event: any) => {
     event.preventDefault();
     setInstallPrompt(event);
@@ -491,19 +410,7 @@ export default function App() {
                 notify={notify}
               />
             )}
-            {page === "Mentorship" && (
-              <Mentorship
-                query={mentorQuery}
-                setQuery={setMentorQuery}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                list={visibleMentors}
-                listSource={mentorSource}
-                requested={requested}
-                setRequested={setRequested}
-                notify={notify}
-              />
-            )}
+            {page === "Mentorship" && <MentorshipPage notify={notify} />}
             {page === "Community" && <Community notify={notify} />}
             {page === "Learning library" && <Learning notify={notify} />}
             {page === "Case workspace" && (

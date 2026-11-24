@@ -17,7 +17,7 @@ os.environ["DATABASE_URL"] = test_database_url
 
 from app.database import Base, engine, SessionLocal
 from app.main import app
-from app.models import Institution, User
+from app.models import Institution, User, MentorProfile
 from app.security import hash_password
 
 @pytest.fixture(scope="session", autouse=True)
@@ -35,15 +35,35 @@ def setup_database():
         password = hash_password("TestPass!2026")
         users = [
             ("member@test.demo", "Test Member", "Member", a.id),
+            ("member2@test.demo", "Test Member Two", "Member", a.id),
+            ("member3@test.demo", "Test Member Three", "Member", a.id),
+            ("member4@test.demo", "Test Member Four", "Member", a.id),
             ("mentor@test.demo", "Test Mentor", "Mentor", a.id),
             ("moderator@test.demo", "Test Moderator", "Moderator", a.id),
             ("casehandler@test.demo", "Test Case Handler", "Case Handler", a.id),
             ("orgadmin@test.demo", "Test Organisation Admin", "Organisation Administrator", a.id),
             ("programmeadmin@test.demo", "Test Programme Admin", "Programme Administrator", None),
             ("orgadmin-b@test.demo", "Test Organisation Admin B", "Organisation Administrator", c.id),
+            ("mentor-b@test.demo", "Test Mentor B", "Mentor", c.id),
         ]
+        created = {}
         for email, name, role, institution_id in users:
-            db.add(User(email=email, full_name=name, role=role, institution_id=institution_id, password_hash=password))
+            account = User(email=email, full_name=name, role=role, institution_id=institution_id, password_hash=password)
+            db.add(account)
+            created[email] = account
+        db.flush()
+        db.add(MentorProfile(
+            user_id=created["mentor@test.demo"].id, institution_id=a.id,
+            title="Research Mentor", discipline="Engineering",
+            bio="Supports research and career development.",
+            expertise="Research, Career, Engineering", accepting_requests=True,
+        ))
+        db.add(MentorProfile(
+            user_id=created["mentor-b@test.demo"].id, institution_id=c.id,
+            title="Second Institution Mentor", discipline="Science",
+            bio="Supports academic development.",
+            expertise="Academic, Science", accepting_requests=True,
+        ))
         db.commit()
     yield
     Base.metadata.drop_all(bind=engine)
