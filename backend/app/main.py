@@ -4,10 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.api.auth_routes import router as auth_router
 from app.api.mentorship_routes import router as mentorship_router
+from app.api.community_routes import router as community_router
 
 app = FastAPI(
     title="GTD Hub Demonstrator API",
-    version="0.3.0",
+    version="0.3.1",
     description="Authenticated proposal demonstrator API. Fictional demonstration data only.",
 )
 origins = [x.strip() for x in os.getenv(
@@ -17,9 +18,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 app.include_router(router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(mentorship_router, prefix="/api/v1")
+app.include_router(community_router, prefix="/api/v1")

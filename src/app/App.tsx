@@ -57,7 +57,6 @@ import {
   Dashboard,
   Support,
   Reporting,
-  Community,
   Learning,
   CaseWorkspace,
   Organisation,
@@ -70,6 +69,7 @@ import { useAuth } from "../features/auth/AuthContext";
 import LoginPage from "../features/auth/LoginPage";
 import Footer from "../components/layout/Footer";
 import MentorshipPage from "../features/mentorship/MentorshipPage";
+import CommunityPage from "../features/community/CommunityPage";
 
 type Page = string;
 const routeByPage: Record<string, string> = {
@@ -411,7 +411,7 @@ export default function App() {
               />
             )}
             {page === "Mentorship" && <MentorshipPage notify={notify} />}
-            {page === "Community" && <Community notify={notify} />}
+            {page === "Community" && <CommunityPage notify={notify} />}
             {page === "Learning library" && <Learning notify={notify} />}
             {page === "Case workspace" && (
               <CaseWorkspace

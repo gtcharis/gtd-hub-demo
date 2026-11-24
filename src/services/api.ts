@@ -52,5 +52,15 @@ export const api = {
     request<MentorshipRequest>(`/api/v1/mentorship/requests/${id}/decision`, { method: "POST", body: JSON.stringify({ decision, response }) }),
   cancelMentorshipRequest: (id: number) =>
     request<{ id: number; status: string }>(`/api/v1/mentorship/requests/${id}/cancel`, { method: "POST" }),
+  communityDiscussions: (q="", category="") => request<CommunityDiscussion[]>(`/api/v1/community/discussions?q=${encodeURIComponent(q)}&category=${encodeURIComponent(category)}`),
+  createDiscussion: (payload:{title:string;category:string;body:string}) => request<CommunityDiscussion>("/api/v1/community/discussions",{method:"POST",body:JSON.stringify(payload)}),
+  updateDiscussion: (id:number,payload:{title?:string;category?:string;body?:string}) => request<CommunityDiscussion>(`/api/v1/community/discussions/${id}`,{method:"PATCH",body:JSON.stringify(payload)}),
+  createCommunityReply: (id:number,body:string) => request<CommunityReply>(`/api/v1/community/discussions/${id}/replies`,{method:"POST",body:JSON.stringify({body})}),
+  updateCommunityReply: (id:number,body:string) => request<{id:number;body:string;status:string}>(`/api/v1/community/replies/${id}`,{method:"PATCH",body:JSON.stringify({body})}),
+  moderateDiscussion: (id:number,status:"open"|"locked"|"hidden") => request<{id:number;status:string}>(`/api/v1/community/discussions/${id}/moderation`,{method:"PATCH",body:JSON.stringify({status})}),
+  moderateReply: (id:number,status:"open"|"locked"|"hidden") => request<{id:number;status:string}>(`/api/v1/community/replies/${id}/moderation`,{method:"PATCH",body:JSON.stringify({status})}),
 };
 export const apiConfigured = Boolean(API_BASE);
+
+export type CommunityReply = { id:number; author_user_id:number; author_name:string; body:string; status:string; created_at:string };
+export type CommunityDiscussion = { id:number; title:string; category:string; body:string; status:string; author_user_id:number; author_name:string; institution_id:number; institution_name:string; created_at:string; updated_at:string; reply_count:number; replies:CommunityReply[] };

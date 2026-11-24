@@ -8,14 +8,14 @@ from types import MappingProxyType
 ROLE_PERMISSIONS = MappingProxyType({
     "Member": frozenset({
         "dashboard:read", "support:read", "reporting:create",
-        "mentorship:read", "mentorship:request", "community:read", "learning:read",
+        "mentorship:read", "mentorship:request", "community:read", "community:create", "community:manage_own", "learning:read",
     }),
     "Mentor": frozenset({
         "dashboard:read", "mentorship:read", "mentorship:manage_own",
-        "community:read", "learning:read",
+        "community:read", "community:create", "community:manage_own", "learning:read",
     }),
     "Moderator": frozenset({
-        "dashboard:read", "community:read", "community:moderate", "learning:read",
+        "dashboard:read", "community:read", "community:create", "community:manage_own", "community:moderate", "learning:read",
     }),
     "Case Handler": frozenset({
         "dashboard:read", "support:read", "cases:read", "cases:manage",
@@ -27,7 +27,7 @@ ROLE_PERMISSIONS = MappingProxyType({
     "Programme Administrator": frozenset({
         "dashboard:read", "support:read", "reporting:create",
         "mentorship:read", "mentorship:request", "mentorship:manage_own",
-        "community:read", "community:moderate", "learning:read",
+        "community:read", "community:create", "community:manage_own", "community:moderate", "learning:read",
         "cases:read", "cases:manage",
         "organisation:read", "organisation:manage_users",
         "administration:read", "institution:read",

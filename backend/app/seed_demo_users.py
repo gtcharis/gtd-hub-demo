@@ -1,7 +1,8 @@
+from datetime import datetime, timezone
 import os
 from sqlalchemy.orm import Session
 from app.database import Base, engine, SessionLocal
-from app.models import Institution, User, MentorProfile
+from app.models import Institution, User, MentorProfile, CommunityDiscussion
 from app.security import hash_password
 
 DEMO_USERS = [
@@ -56,6 +57,15 @@ def seed():
                     title=title, discipline=discipline, bio=bio,
                     expertise=expertise, accepting_requests=True,
                 ))
+        if db.query(CommunityDiscussion).count() == 0:
+            author = db.query(User).filter_by(email="member@gtdhub.demo").first()
+            if author is not None:
+                now = datetime.now(timezone.utc)
+                db.add_all([
+                    CommunityDiscussion(institution_id=institution.id, author_user_id=author.id, title="Building supportive research networks", category="Research", body="What approaches have helped you build supportive networks for research, collaboration and peer learning?", status="open", created_at=now, updated_at=now),
+                    CommunityDiscussion(institution_id=institution.id, author_user_id=author.id, title="Creating inclusive STEM spaces", category="STEM", body="Share practical ideas for making STEM learning spaces welcoming and inclusive for everyone.", status="open", created_at=now, updated_at=now),
+                    CommunityDiscussion(institution_id=institution.id, author_user_id=author.id, title="Career confidence and mentorship", category="Career", body="What has helped you build confidence when planning your academic or professional pathway?", status="open", created_at=now, updated_at=now),
+                ])
         db.commit()
     print("Seed complete. Six primary role accounts and three fictional mentor profiles are available.")
     for email, *_ in DEMO_USERS:

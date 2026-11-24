@@ -84,3 +84,31 @@ class MentorshipConnection(Base):
     request: Mapped[MentorshipRequest] = relationship()
     member: Mapped[User] = relationship(foreign_keys=[member_user_id])
     mentor: Mapped[User] = relationship(foreign_keys=[mentor_user_id])
+
+
+class CommunityDiscussion(Base):
+    __tablename__ = "community_discussions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    institution_id: Mapped[int] = mapped_column(ForeignKey("institutions.id"), index=True)
+    author_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    title: Mapped[str] = mapped_column(String(180), nullable=False)
+    category: Mapped[str] = mapped_column(String(80), nullable=False, default="General")
+    body: Mapped[str] = mapped_column(String(5000), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="open", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    author: Mapped[User] = relationship()
+    institution: Mapped[Institution] = relationship()
+    replies: Mapped[list["CommunityReply"]] = relationship(back_populates="discussion", cascade="all, delete-orphan")
+
+class CommunityReply(Base):
+    __tablename__ = "community_replies"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    discussion_id: Mapped[int] = mapped_column(ForeignKey("community_discussions.id", ondelete="CASCADE"), index=True)
+    author_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    body: Mapped[str] = mapped_column(String(3000), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="visible", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    author: Mapped[User] = relationship()
+    discussion: Mapped[CommunityDiscussion] = relationship(back_populates="replies")
