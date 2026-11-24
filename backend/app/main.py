@@ -6,7 +6,7 @@ from app.api.auth_routes import router as auth_router
 
 app = FastAPI(
     title="GTD Hub Demonstrator API",
-    version="0.2.4",
+    version="0.2.5",
     description="Authenticated proposal demonstrator API. Fictional demonstration data only.",
 )
 origins = [x.strip() for x in os.getenv(

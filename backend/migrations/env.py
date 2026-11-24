@@ -11,11 +11,15 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 def database_url():
-    url = os.getenv("DATABASE_URL", "sqlite:///./gtdhub_demo.db")
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        raise RuntimeError("DATABASE_URL is required. GTD Hub supports PostgreSQL only.")
     if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+psycopg://", 1)
-    if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+        url = url.replace("postgres://", "postgresql+psycopg://", 1)
+    elif url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+    if not url.startswith("postgresql+psycopg://"):
+        raise RuntimeError("Unsupported database. Configure PostgreSQL using postgresql+psycopg://.")
     return url
 
 def run_migrations_offline():

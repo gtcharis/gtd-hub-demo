@@ -47,7 +47,6 @@ import {
   discussions,
   mentors,
   metrics,
-  navByRole,
   organisations,
   supportOptions,
   type DemoRole,
@@ -100,6 +99,18 @@ const landingByRole: Record<DemoRole, string> = {
   "Organisation Administrator": "/organisation",
   "Programme Administrator": "/insights",
 };
+const pagePermissions: Array<[string, string]> = [
+  ["Overview", "dashboard:read"],
+  ["Find support", "support:read"],
+  ["Safe reporting", "reporting:create"],
+  ["Mentorship", "mentorship:read"],
+  ["Community", "community:read"],
+  ["Learning library", "learning:read"],
+  ["Case workspace", "cases:read"],
+  ["Organisation overview", "organisation:read"],
+  ["Programme insights", "programme:read"],
+  ["Administration", "administration:read"],
+];
 const iconMap: Record<string, any> = {
   Overview: Home,
   "Find support": Search,
@@ -164,7 +175,7 @@ export default function App() {
     }
     if (
       requestedPage !== "Help & guidance" &&
-      !navByRole[user.role].includes(requestedPage)
+      !user.permissions.includes(pagePermissions.find(([name]) => name === requestedPage)?.[1] ?? "__denied__")
     ) {
       navigate(landingByRole[user.role]);
     }
@@ -245,7 +256,9 @@ export default function App() {
     setToast(message);
     window.setTimeout(() => setToast(""), 2800);
   };
-  const nav = navByRole[role];
+  const nav = user
+    ? pagePermissions.filter(([, permission]) => user.permissions.includes(permission)).map(([name]) => name)
+    : [];
   const open = (next: string) => {
     if (!nav.includes(next) && next !== "Help & guidance") {
       notify("This screen is not available to your account role.");

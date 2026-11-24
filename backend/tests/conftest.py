@@ -1,8 +1,20 @@
 import os
-os.environ["DATABASE_URL"] = "sqlite:///./test_gtdhub_auth.db"
-
 import pytest
 from fastapi.testclient import TestClient
+
+test_database_url = os.getenv("TEST_DATABASE_URL")
+if not test_database_url:
+    raise RuntimeError("Set TEST_DATABASE_URL to a dedicated PostgreSQL test database before running tests.")
+from sqlalchemy.engine import make_url
+_test_url = make_url(test_database_url)
+if not _test_url.drivername.startswith("postgresql"):
+    raise RuntimeError("TEST_DATABASE_URL must point to PostgreSQL.")
+if not _test_url.database or "test" not in _test_url.database.lower():
+    raise RuntimeError("Safety stop: TEST_DATABASE_URL database name must contain 'test'; tests drop and recreate all tables.")
+if any(marker in _test_url.database.lower() for marker in ("prod", "production", "railway")):
+    raise RuntimeError("Safety stop: production-like database names are not permitted for tests.")
+os.environ["DATABASE_URL"] = test_database_url
+
 from app.database import Base, engine, SessionLocal
 from app.main import app
 from app.models import Institution, User
@@ -10,16 +22,28 @@ from app.security import hash_password
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
+    if engine.dialect.name != "postgresql":
+        raise RuntimeError("GTD Hub tests require PostgreSQL; SQLite is not supported.")
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
-        institution = Institution(name="Test University", code="TEST")
-        db.add(institution)
+        b = Institution(name="Bindura University (Test)", code="BUSE-TEST")
+        a = Institution(name="Test Institution A", code="INST-A")
+        c = Institution(name="Test Institution B", code="INST-B")
+        db.add_all([b, a, c])
         db.flush()
-        db.add(User(
-            email="member@test.demo", full_name="Test Member", role="Member",
-            institution_id=institution.id, password_hash=hash_password("TestPass!2026"),
-        ))
+        password = hash_password("TestPass!2026")
+        users = [
+            ("member@test.demo", "Test Member", "Member", a.id),
+            ("mentor@test.demo", "Test Mentor", "Mentor", a.id),
+            ("moderator@test.demo", "Test Moderator", "Moderator", a.id),
+            ("casehandler@test.demo", "Test Case Handler", "Case Handler", a.id),
+            ("orgadmin@test.demo", "Test Organisation Admin", "Organisation Administrator", a.id),
+            ("programmeadmin@test.demo", "Test Programme Admin", "Programme Administrator", None),
+            ("orgadmin-b@test.demo", "Test Organisation Admin B", "Organisation Administrator", c.id),
+        ]
+        for email, name, role, institution_id in users:
+            db.add(User(email=email, full_name=name, role=role, institution_id=institution_id, password_hash=password))
         db.commit()
     yield
     Base.metadata.drop_all(bind=engine)
@@ -28,3 +52,17 @@ def setup_database():
 def client():
     with TestClient(app) as test_client:
         yield test_client
+
+@pytest.fixture()
+def token_for(client):
+    def issue(email):
+        response = client.post("/api/v1/auth/login", json={"email": email, "password": "TestPass!2026"})
+        assert response.status_code == 200, response.text
+        return response.json()["access_token"]
+    return issue
+
+@pytest.fixture()
+def auth_headers(token_for):
+    def headers(email):
+        return {"Authorization": f"Bearer {token_for(email)}"}
+    return headers

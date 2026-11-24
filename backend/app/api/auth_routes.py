@@ -6,6 +6,7 @@ from app.models import User, UserSession
 from app.security import create_session_token, hash_session_token, verify_password
 from app.schemas.auth import LoginRequest, LoginResponse, UserResponse
 from app.auth_dependencies import get_current_user
+from app.role_policy import permissions_for_role
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -15,6 +16,7 @@ def user_payload(user: User) -> dict:
         "role": user.role, "institution_id": user.institution_id,
         "institution_name": user.institution.name if user.institution else None,
         "is_active": user.is_active,
+        "permissions": sorted(permissions_for_role(user.role)),
     }
 
 @router.post("/login", response_model=LoginResponse)

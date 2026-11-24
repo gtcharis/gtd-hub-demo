@@ -14,4 +14,5 @@ export type AuthUser = {
   institution_id: number | null;
   institution_name: string | null;
   is_active: boolean;
+  permissions: string[];
 };

@@ -13,6 +13,7 @@ class UserResponse(BaseModel):
     institution_id: int | None
     institution_name: str | None
     is_active: bool
+    permissions: list[str] = Field(default_factory=list)
 
 class LoginResponse(BaseModel):
     access_token: str

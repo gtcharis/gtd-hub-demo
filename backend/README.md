@@ -1,73 +1,59 @@
-# GTD Hub Demonstrator API — v0.2.4
+# GTD Hub API — v0.2.5
 
-FastAPI authentication and identity foundation for the proposal demonstrator. All seeded identities and records are fictional.
+FastAPI API for the GTD Hub proposal demonstrator. Demonstration records are fictional.
 
-## Local setup (Windows PowerShell)
+## Database
 
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements-dev.txt
+PostgreSQL is required. SQLite is not supported.
+
+Set `DATABASE_URL` to a PostgreSQL connection URL using the psycopg driver:
+
+```env
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE
 ```
 
-For quick local development, the backend defaults to SQLite (`gtdhub_demo.db`). For PostgreSQL, create a database named `gtdhub_demo`, copy `.env.example` values into your environment, and set `DATABASE_URL` to your PostgreSQL connection string. The PostgreSQL driver is psycopg 3.
-
-Apply migrations and seed the six fictional role accounts:
+Run migrations from the `backend` directory:
 
 ```powershell
-alembic upgrade head
-python -m app.seed_demo_users
+python -m alembic upgrade head
 ```
 
-Start the API:
+## Run locally
 
 ```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-API documentation: `http://127.0.0.1:8000/docs`
+## Demo users
 
-## Demonstration accounts
+Set `DEMO_DEFAULT_PASSWORD` before running:
 
-All six accounts use the value of `DEMO_DEFAULT_PASSWORD` at the time they are first seeded. The default for local demonstration is `GtdHubDemo!2026`.
-
-| Role | Email |
-|---|---|
-| Member | `member@gtdhub.demo` |
-| Mentor | `mentor@gtdhub.demo` |
-| Moderator | `moderator@gtdhub.demo` |
-| Case Handler | `casehandler@gtdhub.demo` |
-| Organisation Administrator | `orgadmin@gtdhub.demo` |
-| Programme Administrator | `programmeadmin@gtdhub.demo` |
-
-The seed command is idempotent and does not overwrite existing users or passwords. If you change `DEMO_DEFAULT_PASSWORD` after seeding, existing accounts retain their existing password.
-
-## Authentication API
-
-- `POST /api/v1/auth/login` — validates credentials and creates a revocable eight-hour session.
-- `GET /api/v1/auth/me` — returns the authenticated user's identity, role and institution.
-- `POST /api/v1/auth/logout` — revokes the current session.
-- `GET /api/v1/health` — public health check.
-- `GET /api/v1/demo/overview` — authenticated.
-- `GET /api/v1/demo/mentors` — authenticated.
-
-Protected endpoints require `Authorization: Bearer <access_token>`. Session tokens are random opaque values; only SHA-256 token hashes are stored in the database. Passwords are hashed using Argon2.
-
-## Frontend configuration
-
-In the frontend project root, create `.env.local`:
-
-```env
-VITE_API_BASE_URL=http://127.0.0.1:8000
+```powershell
+python -m app.seed_demo_users
 ```
 
-Restart Vite after changing environment variables.
+The seed script creates missing fictional demo users; it does not reset passwords for existing accounts.
 
-## Railway
+## Tests
 
-Set the service root directory to `/backend`. Add a PostgreSQL service and set `DATABASE_URL` to its connection string. Configure `CORS_ORIGINS` with the exact frontend origin. The container runs `alembic upgrade head` before starting Uvicorn. Run `python -m app.seed_demo_users` once through the Railway shell to create the initial demo accounts.
+Tests require a dedicated PostgreSQL database. Never point `TEST_DATABASE_URL` at production.
 
-## Demonstrator security boundary
+```powershell
+$env:TEST_DATABASE_URL="postgresql+psycopg://USER:PASSWORD@localhost:5432/gtdhub_test"
+python -m pytest
+```
 
-This is a functional proposal demonstrator, not a production safeguarding service. Tokens are held by the browser frontend to support the separate GitHub Pages and API origins. Before production, move to a reviewed secure session architecture (preferably HttpOnly secure cookies or an approved identity provider), add rate limiting, password reset and account lifecycle workflows, secrets management, audit controls, threat modelling and independent security testing. Do not enter real GBV disclosures or sensitive personal data.
+The test fixture drops and recreates tables in the configured test database.
+
+## RBAC policy
+
+Role permissions are centralised in `app/role_policy.py`.
+
+- Organisation Administrators are scoped to their own institution.
+- Programme Administrators have full programme-wide access across all institutions.
+- All protected API endpoints enforce permissions on the server.
+- Frontend navigation is not a security boundary.
+
+## Deployment
+
+Railway should use `/backend` as the service root directory and the included Dockerfile. The Dockerfile applies Alembic migrations before starting Uvicorn.
