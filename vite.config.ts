@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icons/gtdhub-icon.svg"],
+      includeAssets: ["icons/gtdhub-192.png", "icons/gtdhub-512.png", "icons/gtdhub-512-maskable.png"],
       manifest: {
         name: "GTD Hub — Gender-Transformative Digital Hub",
         short_name: "GTD Hub",
@@ -20,7 +20,9 @@ export default defineConfig({
         start_url: "/gtd-hub-demo/",
         scope: "/gtd-hub-demo/",
         icons: [
-          { src: "./icons/gtdhub-icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any maskable" }
+          { src: "./icons/gtdhub-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "./icons/gtdhub-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "./icons/gtdhub-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
         ]
       },
       workbox: {

@@ -49,24 +49,57 @@ import {
   metrics,
   navByRole,
   organisations,
-  roles,
   supportOptions,
   type DemoRole,
 } from "../data/demo";
 import { api, apiConfigured } from "../services/api";
-import { Brand, Welcome, RoleSelection, Dashboard, Support, Reporting, Mentorship, Community, Learning, CaseWorkspace, Organisation, Programme, Administration, Help } from "../pages/ScreenComponents";
+import {
+  Brand,
+  Welcome,
+  Dashboard,
+  Support,
+  Reporting,
+  Mentorship,
+  Community,
+  Learning,
+  CaseWorkspace,
+  Organisation,
+  Programme,
+  Administration,
+  Help,
+} from "../pages/ScreenComponents";
 import { useAppRouter } from "./router";
+import { useAuth } from "../features/auth/AuthContext";
+import LoginPage from "../features/auth/LoginPage";
 import Footer from "../components/layout/Footer";
 
 type Page = string;
 const routeByPage: Record<string, string> = {
-  Welcome: "/welcome", "Role selection": "/select-role", Overview: "/overview",
-  "Find support": "/support", "Safe reporting": "/reporting", Mentorship: "/mentorship",
-  Community: "/community", "Learning library": "/library", "Case workspace": "/cases",
-  "Organisation overview": "/organisation", "Programme insights": "/insights",
-  Administration: "/admin", "Help & guidance": "/help",
+  Welcome: "/welcome",
+  "Role selection": "/select-role",
+  Overview: "/overview",
+  "Find support": "/support",
+  "Safe reporting": "/reporting",
+  Mentorship: "/mentorship",
+  Community: "/community",
+  "Learning library": "/library",
+  "Case workspace": "/cases",
+  "Organisation overview": "/organisation",
+  "Programme insights": "/insights",
+  Administration: "/admin",
+  "Help & guidance": "/help",
 };
-const pageByRoute = Object.fromEntries(Object.entries(routeByPage).map(([page, route]) => [route, page]));
+const pageByRoute = Object.fromEntries(
+  Object.entries(routeByPage).map(([page, route]) => [route, page]),
+);
+const landingByRole: Record<DemoRole, string> = {
+  Member: "/overview",
+  Mentor: "/overview",
+  Moderator: "/community",
+  "Case Handler": "/cases",
+  "Organisation Administrator": "/organisation",
+  "Programme Administrator": "/insights",
+};
 const iconMap: Record<string, any> = {
   Overview: Home,
   "Find support": Search,
@@ -85,11 +118,11 @@ const navIcon = (name: string) => {
 };
 
 export default function App() {
-  const [role, setRole] = useState<DemoRole>("Member");
+  const { user, loading: authLoading, logout } = useAuth();
+  const role: DemoRole = user?.role ?? "Member";
   const { pathname, navigate } = useAppRouter();
   const page: Page = pageByRoute[pathname] || "Welcome";
   const [menuOpen, setMenuOpen] = useState(false);
-  const [roleOpen, setRoleOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [search, setSearch] = useState("");
   const [reportStep, setReportStep] = useState(0);
@@ -117,17 +150,38 @@ export default function App() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!apiConfigured) return;
+    if (authLoading) return;
+    const publicPage = page === "Welcome" || pathname === "/login";
+    if (!user && !publicPage) navigate("/login");
+  }, [authLoading, user, page, pathname, navigate]);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const requestedPage = pageByRoute[pathname];
+    if (!requestedPage || pathname === "/login") {
+      navigate(landingByRole[user.role]);
+      return;
+    }
+    if (
+      requestedPage !== "Help & guidance" &&
+      !navByRole[user.role].includes(requestedPage)
+    ) {
+      navigate(landingByRole[user.role]);
+    }
+  }, [authLoading, user, pathname, navigate]);
+
+  useEffect(() => {
+    if (!apiConfigured || !user) return;
     Promise.all([api.health(), api.demoOverview()])
       .then(([, overview]) => {
         setApiOverview(overview);
         setApiState("connected");
       })
       .catch(() => setApiState("unavailable"));
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (!apiConfigured) return;
+    if (!apiConfigured || !user) return;
 
     let active = true;
 
@@ -185,22 +239,21 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user?.id]);
 
   const notify = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2800);
   };
+  const nav = navByRole[role];
   const open = (next: string) => {
+    if (!nav.includes(next) && next !== "Help & guidance") {
+      notify("This screen is not available to your account role.");
+      return;
+    }
     navigate(routeByPage[next] || "/overview");
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const switchRole = (next: DemoRole) => {
-    setRole(next);
-    navigate("/overview");
-    setRoleOpen(false);
-    setMenuOpen(false);
   };
   const visibleMentors = useMemo(
     () =>
@@ -230,24 +283,48 @@ export default function App() {
   };
 
   const quickExit = () => {
-    open("Overview");
-    setRoleOpen(false);
+    open(nav.includes("Overview") ? "Overview" : nav[0]);
     notify(
       "Quick Exit demonstration activated. This concept does not contact an external service.",
     );
   };
 
-  if (page === "Welcome")
-    return <Welcome onStart={() => open("Role selection")} />;
-  if (page === "Role selection")
+  if (authLoading) {
+    return <div className="auth-loading">Loading your GTD Hub workspace…</div>;
+  }
+  if (page === "Welcome" && !user)
+    return <Welcome onStart={() => navigate("/login")} />;
+  if (pathname === "/login" && !user) {
     return (
-      <RoleSelection
-        onBack={() => open("Welcome")}
-        onSelect={(r) => switchRole(r)}
+      <LoginPage
+        onBack={() => navigate("/welcome")}
+        onSuccess={(signedInUser) =>
+          navigate(
+            (
+              {
+                Member: "/overview",
+                Mentor: "/overview",
+                Moderator: "/community",
+                "Case Handler": "/cases",
+                "Organisation Administrator": "/organisation",
+                "Programme Administrator": "/insights",
+              } as const
+            )[signedInUser.role],
+          )
+        }
       />
     );
-
-  const nav = navByRole[role];
+  }
+  if (!user) return <div className="auth-loading">Redirecting to sign in…</div>;
+  if (
+    page === "Welcome" ||
+    pathname === "/login" ||
+    (page !== "Help & guidance" && !nav.includes(page))
+  ) {
+    return (
+      <div className="auth-loading">Opening your authorised workspace…</div>
+    );
+  }
   return (
     <div className="min-h-screen bg-[#f7f8fc] text-brand-ink">
       <div className="demo-ribbon">
@@ -268,37 +345,17 @@ export default function App() {
               <X />
             </button>
           </div>
-          <div className="role-label">MY ROLE (DEMO)</div>
-          <button
-            className="role-picker"
-            onClick={() => setRoleOpen(!roleOpen)}
-            aria-expanded={roleOpen}
-          >
+          <div className="role-label">SIGNED IN AS</div>
+          <div className="role-picker account-identity">
             <UserRound size={18} />
             <span>
-              <b>{role}</b>
+              <b>{user.full_name}</b>
               <small>
-                {role === "Member"
-                  ? "Help seeker · Primary user"
-                  : "Explore demo workspace"}
+                {role}
+                {user.institution_name ? ` · ${user.institution_name}` : ""}
               </small>
             </span>
-            <ChevronDown size={16} />
-          </button>
-          {roleOpen && (
-            <div className="role-popover">
-              {roles.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => switchRole(r)}
-                  className={r === role ? "selected" : ""}
-                >
-                  {r}
-                  {r === role && <Check size={15} />}
-                </button>
-              ))}
-            </div>
-          )}
+          </div>
           <div className="nav-label">WORKSPACE</div>
           <nav className="side-nav" aria-label="Main navigation">
             {nav.map((item) => (
@@ -368,14 +425,25 @@ export default function App() {
               </button>
               <button
                 className="profile-chip"
-                onClick={() => setRoleOpen(!roleOpen)}
+                onClick={async () => {
+                  await logout();
+                  navigate("/login");
+                }}
+                title="Sign out"
               >
-                <span className="profile-avatar">TM</span>
-                <span>
-                  <b>Tadiwa M.</b>
-                  <small>{role}</small>
+                <span className="profile-avatar">
+                  {user.full_name
+                    .split(/\\s+/)
+                    .map((part) => part[0])
+                    .slice(0, 2)
+                    .join("")
+                    .toUpperCase()}
                 </span>
-                <ChevronDown size={15} />
+                <span>
+                  <b>{user.full_name}</b>
+                  <small>Sign out · {role}</small>
+                </span>
+                <LogOut size={15} />
               </button>
               <button
                 className="install-button"
@@ -391,6 +459,7 @@ export default function App() {
             {page === "Overview" && (
               <Dashboard
                 role={role}
+                displayName={user.full_name}
                 go={open}
                 notify={notify}
                 overview={apiOverview}
@@ -461,6 +530,7 @@ export default function App() {
             ].includes(page) && (
               <Dashboard
                 role={role}
+                displayName={user.full_name}
                 go={open}
                 notify={notify}
                 overview={apiOverview}

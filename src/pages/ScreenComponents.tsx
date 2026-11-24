@@ -53,7 +53,6 @@ import {
   type DemoRole,
 } from "../data/demo";
 
-
 function DownloadIcon() {
   return <ArrowRight size={15} />;
 }
@@ -86,7 +85,7 @@ export function Welcome({ onStart }: { onStart: () => void }) {
             action on gender equality.
           </p>
           <button className="primary-button" onClick={onStart}>
-            Explore the demo <ArrowRight size={19} />
+            Sign in to GTD Hub <ArrowRight size={19} />
           </button>
           <div className="demo-warning">
             <Info size={17} /> Proposal demonstrator only. Fictional data. No
@@ -190,12 +189,14 @@ export function PageTitle({
 }
 export function Dashboard({
   role,
+  displayName,
   go,
   notify,
   overview,
   apiState,
 }: {
   role: DemoRole;
+  displayName: string;
   go: (p: string) => void;
   notify: (s: string) => void;
   overview: any;
@@ -208,7 +209,7 @@ export function Dashboard({
         <div className="welcome-text">
           <p className="eyebrow">MONDAY, 23 NOVEMBER 2026</p>
           <h1>
-            Good morning, <em>Tadiwa</em> 👋
+            Good morning, <em>{displayName.split(" ")[0]}</em> 👋
           </h1>
           <p>
             Welcome to GTD Hub — a safe, inclusive space for support,
