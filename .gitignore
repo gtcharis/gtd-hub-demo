@@ -3,9 +3,10 @@ dist/
 .env
 .env.*
 !.env.example
-audit-report.json
 .venv/
+backend/.venv/
 __pycache__/
 .pytest_cache/
-*.pyc
+*.py[cod]
+audit-report.json
 .DS_Store
