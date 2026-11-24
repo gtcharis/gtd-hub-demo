@@ -1,14 +1,17 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from app.api.routes import router
 from app.api.auth_routes import router as auth_router
 from app.api.mentorship_routes import router as mentorship_router
 from app.api.community_routes import router as community_router
+from app.api.case_routes import router as case_router
 
 app = FastAPI(
     title="GTD Hub Demonstrator API",
-    version="0.3.1",
+    version="0.3.2",
     description="Authenticated proposal demonstrator API. Fictional demonstration data only.",
 )
 origins = [x.strip() for x in os.getenv(
@@ -25,3 +28,12 @@ app.include_router(router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(mentorship_router, prefix="/api/v1")
 app.include_router(community_router, prefix="/api/v1")
+app.include_router(case_router, prefix="/api/v1")
+
+@app.middleware("http")
+async def enforce_https(request: Request, call_next):
+    if os.getenv("REQUIRE_HTTPS", "false").lower() == "true":
+        forwarded = request.headers.get("x-forwarded-proto", "").split(",")[0].strip().lower()
+        if request.url.scheme != "https" and forwarded != "https":
+            return JSONResponse(status_code=400, content={"detail": "HTTPS is required"})
+    return await call_next(request)

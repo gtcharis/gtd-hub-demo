@@ -40,6 +40,7 @@ import {
   UserRound,
   Sparkles,
 } from "lucide-react";
+import { api } from "../services/api";
 import {
   activities,
   cases,
@@ -353,72 +354,133 @@ export function ExploreCard({
     </button>
   );
 }
+type SupportCategory = {
+  id: string;
+  title: string;
+  description: string;
+  icon: typeof Heart;
+  tone: string;
+  overview: string;
+  examples: string[];
+  access: string[];
+  privacy: string;
+  aliases: string[];
+};
+
+const supportCategories: SupportCategory[] = [
+  {
+    id: "psychosocial", title: "Psychosocial Support",
+    description: "Counselling, emotional wellbeing and supportive listening.", icon: HeartHandshake, tone: "lilac",
+    overview: "Psychosocial support can help someone talk through a difficult experience, understand their options and identify support that feels appropriate to them. The type and availability of services varies by institution and provider.",
+    examples: ["Individual counselling and supportive listening", "Wellbeing support and coping strategies", "Information about specialist or trauma-informed services", "Peer-support options where these are established and appropriately facilitated"],
+    access: ["Check the institution's verified student or staff support channels.", "Ask what the service offers, how appointments are arranged and whether there are any eligibility requirements.", "You can ask questions about confidentiality before deciding whether to proceed."],
+    privacy: "Confidentiality arrangements and any limits should be explained by the service provider before you share personal information.",
+    aliases: ["psychosocial", "counselling", "wellbeing", "mental health"]
+  },
+  {
+    id: "health", title: "Health Services",
+    description: "General, reproductive, sexual and other health information and care.", icon: Stethoscope, tone: "mint",
+    overview: "Health services may provide assessment, treatment, health information and referrals. The services available, costs, eligibility and opening hours depend on the provider.",
+    examples: ["General health consultations", "Sexual and reproductive health information and services", "Clinical assessment and follow-up care", "Referral to an appropriate health professional"],
+    access: ["Use a verified institutional clinic or recognised health provider.", "Confirm availability, fees, opening hours and whether an appointment is needed.", "For urgent medical needs, seek in-person medical assistance rather than relying on this directory."],
+    privacy: "Ask the provider how health information is recorded, who can access it and how confidentiality is protected.",
+    aliases: ["health", "clinic", "medical", "reproductive", "sexual health"]
+  },
+  {
+    id: "legal", title: "Legal Information & Assistance",
+    description: "General information about rights, options and access to legal advice.", icon: Scale, tone: "cream",
+    overview: "Legal support can help a person understand relevant rights, procedures and possible options. This directory provides general information only and is not legal advice.",
+    examples: ["General information about rights and available procedures", "Access to legal aid or an independent legal adviser", "Information about formal reporting options", "Guidance on where to seek qualified legal assistance"],
+    access: ["Seek advice from a qualified legal practitioner or verified legal-aid provider.", "Ask whether the service is free, confidential and available to your circumstances.", "You can seek information without deciding to make a formal complaint."],
+    privacy: "Before sharing details, ask the adviser about confidentiality, record keeping and any legal limits on disclosure.",
+    aliases: ["legal", "law", "rights", "legal aid", "lawyer"]
+  },
+  {
+    id: "institutional", title: "Institutional Support",
+    description: "Campus support offices, student services and designated institutional contacts.", icon: Building2, tone: "blue",
+    overview: "Each participating higher education institution is responsible for confirming its own support structures, designated personnel, policies and referral arrangements. The platform does not replace those institutional processes.",
+    examples: ["Student affairs and student support offices", "Institutional gender desks or designated focal persons", "Academic support and reasonable study-related assistance", "Information about institutional policies and procedures"],
+    access: ["Consult your institution's officially published channels.", "Confirm the correct office and the role of the person receiving an enquiry.", "Ask what information is recorded and what choices are available to you."],
+    privacy: "Institution-specific confidentiality, record handling and formal procedures must be explained by the relevant institution.",
+    aliases: ["institution", "campus", "student affairs", "gender desk", "university"]
+  },
+  {
+    id: "peer", title: "Peer Support & Mentorship",
+    description: "Peer connection, mentoring and supportive STEM communities.", icon: Users, tone: "teal",
+    overview: "Peer and mentorship spaces can provide connection, encouragement and shared learning. They are not substitutes for professional health, legal or safeguarding services.",
+    examples: ["Peer learning and support groups", "Mentorship and champion networks", "STEM community activities", "Signposting to appropriate professional support"],
+    access: ["Check the programme or institution's available groups and mentorship opportunities.", "Review participation guidelines and expectations before joining.", "Avoid sharing another person's private information in group spaces."],
+    privacy: "Peer settings may not provide the same confidentiality as professional services. Share only what you are comfortable sharing.",
+    aliases: ["peer", "mentorship", "mentor", "champion", "community", "student group"]
+  }
+];
+
 export function Support({ notify }: { notify: (s: string) => void }) {
+  const [directory, setDirectory] = useState<Array<{ id: number; category: string; title: string; description: string; contact_label: string | null; institution_id?: number | null }>>([]);
+  const [directoryState, setDirectoryState] = useState<"loading" | "loaded" | "unavailable">("loading");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  useEffect(() => {
+    let active = true;
+    api.supportServices().then(rows => { if (active) { setDirectory(rows); setDirectoryState("loaded"); } })
+      .catch(() => { if (active) setDirectoryState("unavailable"); });
+    return () => { active = false; };
+  }, []);
+  const filtered = useMemo(() => supportCategories.filter(category => {
+    const haystack = [category.title, category.description, category.overview, ...category.examples, ...category.aliases].join(" ").toLowerCase();
+    return haystack.includes(query.trim().toLowerCase());
+  }), [query]);
+  const serviceCategoryMatches = (serviceCategory: string, category: SupportCategory) => {
+    const value = serviceCategory.toLowerCase();
+    return category.aliases.some(alias => value.includes(alias) || alias.includes(value));
+  };
   return (
     <>
-      <PageTitle
-        eyebrow="SUPPORT DIRECTORY"
-        title="Find support"
-        description="Explore support information and options. You can review information before deciding what, if anything, to do next."
-      />
+      <PageTitle eyebrow="SUPPORT DIRECTORY" title="Find support" description="Explore different kinds of support, understand what they may offer and decide what, if anything, you would like to do next." />
       <div className="notice">
         <ShieldCheck />
-        <div>
-          <b>You are in control.</b>
-          <p>
-            This is illustrative directory content. Live contacts and referral
-            pathways would be validated with each participating organisation.
-          </p>
-        </div>
+        <div><b>You are in control.</b><p>This is a proposal demonstrator. Service descriptions are general information; live contacts, eligibility, availability and referral pathways must be verified by each participating institution before publication.</p></div>
       </div>
-      <div className="support-grid">
-        {supportOptions.map((s, i) => {
-          const Icon = [Heart, Stethoscope, Scale, Building2][i];
-          return (
-            <article className={`support-tile ${s.tone}`} key={s.title}>
-              <Icon size={34} />
-              <div>
-                <h3>{s.title}</h3>
-                <p>{s.description}</p>
-                <button
-                  className="text-action"
-                  onClick={() =>
-                    notify(
-                      `${s.title}: illustrative service information. Live details would be organisation-verified.`,
-                    )
-                  }
-                >
-                  View information <ArrowRight size={15} />
-                </button>
-              </div>
-            </article>
-          );
+      <div className="support-directory-tools">
+        <label className="support-search"><Search size={18} /><input aria-label="Search support information" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search support topics, services or rights" /></label>
+        <span>{filtered.length} support {filtered.length === 1 ? "category" : "categories"}</span>
+      </div>
+      {filtered.length === 0 && <div className="empty-state"><Search size={24}/><b>No matching support topics</b><p>Try a different search term or clear your search.</p><button className="text-action" onClick={() => setQuery("")}>Clear search</button></div>}
+      <div className="support-category-list">
+        {filtered.map(category => {
+          const Icon = category.icon;
+          const isOpen = expanded === category.id;
+          const services = directory.filter(service => serviceCategoryMatches(service.category, category));
+          return <article className={`support-category ${category.tone} ${isOpen ? "is-expanded" : ""}`} key={category.id}>
+            <button className="support-category-trigger" aria-expanded={isOpen} aria-controls={`support-detail-${category.id}`} onClick={() => setExpanded(isOpen ? null : category.id)}>
+              <span className="support-category-icon"><Icon size={30}/></span>
+              <span className="support-category-copy"><b>{category.title}</b><small>{category.description}</small><em>{isOpen ? "Hide information" : "View information"} <ArrowRight size={15}/></em></span>
+              <ChevronDown className="support-chevron" size={19}/>
+            </button>
+            {isOpen && <div className="support-category-detail" id={`support-detail-${category.id}`}>
+              <p>{category.overview}</p>
+              <h4>What this may include</h4>
+              <ul>{category.examples.map(item => <li key={item}>{item}</li>)}</ul>
+              <h4>How to explore this support</h4>
+              <ol>{category.access.map(item => <li key={item}>{item}</li>)}</ol>
+              <div className="support-privacy-note"><ShieldCheck size={17}/><span><b>Privacy to consider</b>{category.privacy}</span></div>
+              {services.length > 0 && <div className="support-published-services"><h4>Illustrative directory listings</h4>{services.map(service => <div className="support-service-entry" key={service.id}><b>{service.title}</b><p>{service.description}</p><small>{service.contact_label || "Contact and access details pending institutional verification"}</small><span>Illustrative entry · Institution verification pending</span></div>)}</div>}
+            </div>}
+          </article>;
         })}
       </div>
-      <div className="emergency-card">
-        <div className="emergency-symbol">
-          <LifeBuoy size={29} />
-        </div>
-        <div>
-          <b>Emergency support</b>
-          <p>
-            If you are in immediate danger, contact local emergency services or
-            a trusted person. This demo does not provide emergency response.
-          </p>
-        </div>
-        <button
-          onClick={() =>
-            notify(
-              "Emergency contacts must be confirmed and configured by the participating organisation.",
-            )
-          }
-        >
-          Read guidance <ArrowRight size={16} />
-        </button>
-      </div>
+      {directoryState === "loading" && <p className="support-api-status">Loading institution directory listings…</p>}
+      {directoryState === "unavailable" && <p className="support-api-status">Institution-specific listings are currently unavailable. General support information remains available above.</p>}
+      <section className="emergency-card support-emergency">
+        <div className="emergency-symbol"><LifeBuoy size={29}/></div>
+        <div><b>Immediate danger or urgent medical need?</b><p>If you are in immediate danger, seek help from local emergency services or a trusted person. For urgent medical needs, go to an appropriate health facility. This demonstrator does not provide emergency response and its contacts have not been verified.</p></div>
+        <button onClick={() => notify("Emergency contacts and escalation guidance must be confirmed by the project team and participating institutions before operational publication.")}>Read guidance <ArrowRight size={16}/></button>
+      </section>
+      <p className="support-footer-note">You do not have to use the reporting feature to read support information. Exploring these options does not submit a report or contact a service.</p>
     </>
   );
 }
+
 export function Reporting({
   step,
   setStep,
@@ -427,6 +489,9 @@ export function Reporting({
   consent,
   setConsent,
   notify,
+  institutionId,
+  submittedCaseRef,
+  setSubmittedCaseRef,
 }: {
   step: number;
   setStep: (n: number) => void;
@@ -435,7 +500,11 @@ export function Reporting({
   consent: boolean;
   setConsent: (v: boolean) => void;
   notify: (s: string) => void;
+  institutionId?: number;
+  submittedCaseRef: string;
+  setSubmittedCaseRef: (v: string) => void;
 }) {
+  const [submitting, setSubmitting] = useState(false);
   const steps = ["Your choice", "Your options", "Review", "Confirmation"];
   return (
     <>
@@ -450,6 +519,7 @@ export function Reporting({
               setStep(0);
               setAnonymous(true);
               setConsent(false);
+              setSubmittedCaseRef("");
             }}
           >
             Reset journey
@@ -462,7 +532,7 @@ export function Reporting({
           <b>Fictional demonstration only</b>
           <p>
             Do not enter real names, contact details, incidents or personal
-            experiences. No information is sent or stored.
+            experiences. Only a predefined synthetic scenario is submitted to the encrypted demonstration API.
           </p>
         </div>
       </div>
@@ -487,8 +557,7 @@ export function Reporting({
               </div>
               <h2>Choose how you would like to proceed</h2>
               <p>
-                You can explore anonymous or identified reporting options. This
-                demonstration does not submit a report.
+                Choose an account-linked or unlinked synthetic demonstration record. The demo does not accept real disclosures or free-text details.
               </p>
               <button
                 className={`choice-row ${anonymous ? "chosen" : ""}`}
@@ -497,7 +566,7 @@ export function Reporting({
                 <span className="radio-dot" />
                 <span>
                   <b>Anonymous report</b>
-                  <small>Explore a route without providing an identity.</small>
+                  <small>The case record is not linked to your account. Network or device metadata may still exist outside the case record.</small>
                 </span>
                 <UserRound />
               </button>
@@ -588,16 +657,16 @@ export function Reporting({
               </div>
               <h2>Demonstration journey complete</h2>
               <p>
-                You have explored the reporting options. No report was
-                submitted, no information was transmitted and no case was
-                created.
+                A predefined synthetic demonstration scenario has been submitted and encrypted by the API. No free-text narrative or real contact details are accepted.
               </p>
+              {submittedCaseRef && <div className="review-row"><span>Demonstration reference</span><b>{submittedCaseRef}</b></div>}
               <button
                 className="primary-button"
                 onClick={() => {
                   setStep(0);
                   setConsent(false);
                   setAnonymous(true);
+                  setSubmittedCaseRef("");
                 }}
               >
                 Explore again <ArrowRight size={17} />
@@ -616,9 +685,22 @@ export function Reporting({
             {step < 3 && (
               <button
                 className="primary-button"
-                onClick={() => setStep(step + 1)}
+                disabled={submitting}
+                onClick={async () => {
+                  if (step !== 2) { setStep(step + 1); return; }
+                  if (!institutionId) { notify("This account has no institution assignment. A synthetic case cannot be submitted."); return; }
+                  setSubmitting(true);
+                  try {
+                    const result = await api.createDemoCase({ institution_id: institutionId, scenario_code: "SCENARIO_SUPPORT", anonymous, consent_to_referral: consent });
+                    setSubmittedCaseRef(result.case_ref);
+                    setStep(3);
+                    notify("Synthetic demonstration case encrypted and recorded.");
+                  } catch (error) {
+                    notify(error instanceof Error ? error.message : "The demonstration case could not be submitted.");
+                  } finally { setSubmitting(false); }
+                }}
               >
-                {step === 2 ? "Complete demo" : "Continue"}{" "}
+                {submitting ? "Submitting…" : step === 2 ? "Submit synthetic demo" : "Continue"}{" "}
                 <ArrowRight size={17} />
               </button>
             )}
@@ -629,8 +711,7 @@ export function Reporting({
             <ShieldCheck size={30} />
             <h3>Your safety and choices matter</h3>
             <p>
-              The proposed platform would support informed consent,
-              confidentiality and human-led safeguarding workflows.
+              The demonstrator records a consent choice and requires an authorised human handler for workflow actions. It does not make safeguarding decisions.
             </p>
           </div>
           <div className="aside-card">

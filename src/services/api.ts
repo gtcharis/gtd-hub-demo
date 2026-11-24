@@ -41,6 +41,9 @@ export const api = {
   me: () => request<AuthUser>("/api/v1/auth/me"),
   logout: () => request<void>("/api/v1/auth/logout", { method: "POST" }),
   health: () => request<ApiHealth>("/api/v1/health"),
+  createDemoCase: (payload: { institution_id: number; scenario_code: string; anonymous: boolean; consent_to_referral: boolean }) =>
+    request<{ case_ref: string; workflow_status: string; consent_status: string; synthetic: boolean; message: string }>("/api/v1/cases", { method: "POST", body: JSON.stringify(payload) }),
+  supportServices: () => request<Array<{ id: number; category: string; title: string; description: string; contact_label: string | null }>>("/api/v1/support/services"),
   demoOverview: () => request<Record<string, unknown>>("/api/v1/demo/overview"),
   demoMentors: () => request<Array<{ id: string; name: string; field: string; focus: string; institution: string }>>("/api/v1/demo/mentors"),
   mentorshipMentors: (params = "") => request<MentorProfile[]>(`/api/v1/mentorship/mentors${params}`),

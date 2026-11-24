@@ -47,7 +47,7 @@ def test_moderator_can_lock_discussion(client, auth_headers):
 
 def test_community_is_institution_scoped(client, auth_headers):
     member_a = auth_headers("member@test.demo")
-    member_b = auth_headers("mentor-b@test.demo")
+    member_b = auth_headers("orgadmin-b@test.demo")
     created = client.post("/api/v1/community/discussions", headers=member_a, json={
         "title": "Institution A community discussion", "category": "General",
         "body": "This discussion should not appear in another institution."

@@ -136,6 +136,7 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [search, setSearch] = useState("");
   const [reportStep, setReportStep] = useState(0);
+  const [submittedCaseRef, setSubmittedCaseRef] = useState("");
   const [anonymous, setAnonymous] = useState(true);
   const [consent, setConsent] = useState(false);
   const [caseStatus, setCaseStatus] = useState<Record<string, string>>({});
@@ -408,6 +409,9 @@ export default function App() {
                 consent={consent}
                 setConsent={setConsent}
                 notify={notify}
+                institutionId={user?.institution_id ?? undefined}
+                submittedCaseRef={submittedCaseRef}
+                setSubmittedCaseRef={setSubmittedCaseRef}
               />
             )}
             {page === "Mentorship" && <MentorshipPage notify={notify} />}

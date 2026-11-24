@@ -112,3 +112,42 @@ class CommunityReply(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     author: Mapped[User] = relationship()
     discussion: Mapped[CommunityDiscussion] = relationship(back_populates="replies")
+
+class SupportService(Base):
+    __tablename__ = "support_services"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    institution_id: Mapped[int | None] = mapped_column(ForeignKey("institutions.id"), nullable=True, index=True)
+    category: Mapped[str] = mapped_column(String(80), nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    description: Mapped[str] = mapped_column(String(1200), nullable=False)
+    contact_label: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+class SecureCase(Base):
+    __tablename__ = "secure_cases"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    case_ref: Mapped[str] = mapped_column(String(36), unique=True, index=True, nullable=False)
+    institution_id: Mapped[int] = mapped_column(ForeignKey("institutions.id"), index=True, nullable=False)
+    created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    anonymous: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    scenario_code: Mapped[str] = mapped_column(String(40), nullable=False)
+    workflow_status: Mapped[str] = mapped_column(String(30), nullable=False, default="received")
+    consent_status: Mapped[str] = mapped_column(String(20), nullable=False, default="not_granted")
+    ciphertext: Mapped[bytes] = mapped_column(nullable=False)
+    nonce: Mapped[bytes] = mapped_column(nullable=False)
+    key_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+class CaseAuditEvent(Base):
+    __tablename__ = "case_audit_events"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sequence: Mapped[int] = mapped_column(nullable=False, unique=True)
+    case_ref: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
+    institution_id: Mapped[int] = mapped_column(nullable=False, index=True)
+    actor_user_id: Mapped[int | None] = mapped_column(nullable=True)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    event_json: Mapped[str] = mapped_column(String(1200), nullable=False)
+    previous_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    event_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
