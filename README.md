@@ -143,3 +143,10 @@ pytest
 ### Release boundary and outstanding production gates
 
 This is a secure synthetic demonstrator, not a live GBV intake service. It does not accept free-text disclosures or real contact details, send referrals, issue emergency alerts, or make safeguarding decisions. Directory contacts and the one-hour escalation protocol must be approved and configured by FAWEZI/BUSE and participating HEIs. Production also remains blocked on staff/admin MFA, partner-approved retention/deletion and incident-response procedures, independent OWASP ASVS/security testing, hosting/back-up encryption evidence, key custody/rotation and recovery arrangements, and review of the separate October 2026 developer Technical Paper. Do not enter real case data.
+
+
+## v0.3.3 — Full Case Management (development)
+
+The v0.3.3 development line extends the v0.3.2 encrypted reporting foundation with institution-scoped case queues, handler assignment and assignment history, human-validated workflow transitions, human-set priority, encrypted structured activity notes, and case audit inspection. See `docs/releases/V0.3.3-CASE-MANAGEMENT.md` and `docs/architecture/CASE-MANAGEMENT-V0.3.3.md`.
+
+This remains a synthetic-data demonstrator. It does not provide live safeguarding operations, automated risk decisions, external referrals or emergency notifications. MFA, partner-controlled key custody/recovery, production TLS and encrypted-backup verification, independent security testing, and partner-approved operational protocols remain release gates.

@@ -6,7 +6,7 @@ export const navByRole: Record<DemoRole, string[]> = {
   Moderator: ["Overview", "Community", "Learning library"],
   "Case Handler": ["Overview", "Case workspace", "Find support"],
   "Organisation Administrator": ["Overview", "Organisation overview", "Administration"],
-  "Programme Administrator": ["Overview", "Programme insights", "Organisation overview", "Administration"]
+  "Programme Administrator": ["Overview", "Case workspace", "Programme insights", "Organisation overview", "Administration"]
 };
 export const metrics = [
   { label: "Registered users", value: "1,248", icon: "users", tone: "mint" },

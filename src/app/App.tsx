@@ -139,8 +139,6 @@ export default function App() {
   const [submittedCaseRef, setSubmittedCaseRef] = useState("");
   const [anonymous, setAnonymous] = useState(true);
   const [consent, setConsent] = useState(false);
-  const [caseStatus, setCaseStatus] = useState<Record<string, string>>({});
-  const [selectedCase, setSelectedCase] = useState(cases[0].id);
   const [organisation, setOrganisation] = useState(organisations[1]);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [apiState, setApiState] = useState<
@@ -417,14 +415,7 @@ export default function App() {
             {page === "Mentorship" && <MentorshipPage notify={notify} />}
             {page === "Community" && <CommunityPage notify={notify} />}
             {page === "Learning library" && <Learning notify={notify} />}
-            {page === "Case workspace" && (
-              <CaseWorkspace
-                selected={selectedCase}
-                setSelected={setSelectedCase}
-                statuses={caseStatus}
-                setStatuses={setCaseStatus}
-              />
-            )}
+            {page === "Case workspace" && <CaseWorkspace />}
             {page === "Organisation overview" && (
               <Organisation
                 selected={organisation}

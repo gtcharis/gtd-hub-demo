@@ -955,113 +955,78 @@ export function Learning({ notify }: { notify: (s: string) => void }) {
     </>
   );
 }
-export function CaseWorkspace({
-  selected,
-  setSelected,
-  statuses,
-  setStatuses,
-}: {
-  selected: string;
-  setSelected: (v: string) => void;
-  statuses: Record<string, string>;
-  setStatuses: (v: Record<string, string>) => void;
-}) {
-  const item = cases.find((c) => c.id === selected) || cases[0];
+export function CaseWorkspace() {
+  const [records, setRecords] = useState<import("../services/api").CaseRecord[]>([]);
+  const [dashboard, setDashboard] = useState<{ total: number; assigned_to_me: number; unassigned: number; by_status: Record<string, number> } | null>(null);
+  const [handlers, setHandlers] = useState<Array<{ id: number; full_name: string; institution_id: number }>>([]);
+  const [selected, setSelected] = useState("");
+  const [detail, setDetail] = useState<any>(null);
+  const [notes, setNotes] = useState<Array<{ id: number; label: string; created_at: string }>>([]);
+  const [audit, setAudit] = useState<{ integrity_valid: boolean; events: Array<{ sequence: number; action: string; actor_user_id: number | null; created_at: string }> } | null>(null);
+  const [filter, setFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const refresh = async () => {
+    const [summary, queue, availableHandlers] = await Promise.all([
+      api.caseDashboard(), api.caseQueue(statusFilter, filter), api.caseHandlers(),
+    ]);
+    setDashboard(summary); setRecords(queue); setHandlers(availableHandlers);
+    if (!selected && queue.length) setSelected(queue[0].case_ref);
+    if (selected && !queue.some((row) => row.case_ref === selected)) setSelected(queue[0]?.case_ref || "");
+  };
+  useEffect(() => { refresh().catch((e) => setError(e.message)); }, [filter, statusFilter]);
+  useEffect(() => {
+    if (!selected) { setDetail(null); setNotes([]); setAudit(null); return; }
+    Promise.all([api.caseDetail(selected), api.caseNotes(selected)])
+      .then(([record, caseNotes]) => { setDetail(record); setNotes(caseNotes); setAudit(null); })
+      .catch((e) => setError(e.message));
+  }, [selected]);
+  const run = async (action: () => Promise<unknown>) => {
+    setBusy(true); setError("");
+    try { await action(); await refresh(); if (selected) { const [record, caseNotes] = await Promise.all([api.caseDetail(selected), api.caseNotes(selected)]); setDetail(record); setNotes(caseNotes); } }
+    catch (e) { setError(e instanceof Error ? e.message : "The action could not be completed."); }
+    finally { setBusy(false); }
+  };
+  const statusLabel = (status: string) => status.replace(/_/g, " ");
+  const selectedRecord = records.find((row) => row.case_ref === selected);
   return (
     <>
-      <PageTitle
-        eyebrow="RESTRICTED DEMONSTRATION WORKSPACE"
-        title="Case handling"
-        description="Explore fictional case records and human-led workflow concepts. This is not a live case-management system."
-      />
-      <div className="notice warning">
-        <LockKeyhole />
-        <div>
-          <b>Fictional cases only</b>
-          <p>
-            No real disclosures, identities or case records are present.
-            Production access would be tightly controlled, logged and governed
-            by approved safeguarding procedures.
-          </p>
-        </div>
+      <PageTitle eyebrow="RESTRICTED CASE MANAGEMENT" title="Case management" description="Institution-scoped work queues and human-recorded case workflows. Synthetic demonstration data only." />
+      <div className="notice warning"><LockKeyhole /><div><b>Demonstration environment — fictional records only</b><p>Do not enter real disclosures, identities or contact details. The system records authorised human actions; it does not assess risk, make safeguarding decisions, contact providers or send emergency alerts.</p></div></div>
+      {error && <div className="notice warning" role="alert"><Info /><p>{error}</p></div>}
+      <div className="metric-grid">
+        {[{label:"Visible cases",value:dashboard?.total ?? "—"},{label:"Assigned to me",value:dashboard?.assigned_to_me ?? "—"},{label:"Unassigned",value:dashboard?.unassigned ?? "—"}].map((m) => <div className="admin-metric" key={m.label}><b>{m.value}</b><span>{m.label}</span></div>)}
+      </div>
+      <div className="case-toolbar" style={{display:"flex",gap:12,flexWrap:"wrap",margin:"18px 0"}}>
+        <label>Assignment <select value={filter} onChange={(e) => setFilter(e.target.value)}><option value="all">All cases</option><option value="mine">Assigned to me</option><option value="unassigned">Unassigned</option></select></label>
+        <label>Status <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="">All statuses</option>{["received","acknowledged","under_review","information_only","referral_pending_human_action","institutional_action_pending_human_action","emergency_escalation_pending_human_action","closed"].map((v) => <option key={v} value={v}>{statusLabel(v)}</option>)}</select></label>
+        <button disabled={busy} onClick={() => run(refresh)}>Refresh queue</button>
       </div>
       <div className="case-layout">
         <div className="case-list">
-          {cases.map((c) => (
-            <button
-              key={c.id}
-              className={selected === c.id ? "selected" : ""}
-              onClick={() => setSelected(c.id)}
-            >
-              <b>{c.id}</b>
-              <span>{c.type}</span>
-              <small>{c.organisation}</small>
-              <em>{statuses[c.id] || c.status}</em>
-            </button>
-          ))}
+          {records.map((row) => <button key={row.case_ref} className={selected === row.case_ref ? "selected" : ""} onClick={() => setSelected(row.case_ref)}><b>{row.case_ref.slice(0, 13).toUpperCase()}</b><span>{row.scenario_code.replace("SCENARIO_", "").toLowerCase()}</span><small>Institution {row.institution_id} · {row.anonymous ? "Anonymous" : "Identified"}</small><em>{statusLabel(row.workflow_status)} · {row.priority}</em></button>)}
+          {!records.length && <div className="panel-box"><p>No cases match these filters.</p></div>}
         </div>
-        <div className="case-detail">
-          <div className="case-head">
-            <div>
-              <span className="eyebrow">FICTIONAL RECORD</span>
-              <h2>{item.id}</h2>
-            </div>
-            <span className="status-pill">
-              {statuses[item.id] || item.status}
-            </span>
+        {detail && selectedRecord && <div className="case-detail">
+          <div className="case-head"><div><span className="eyebrow">SECURE CASE RECORD</span><h2>{detail.case_ref}</h2></div><span className="status-pill">{statusLabel(detail.workflow_status)}</span></div>
+          <div className="case-fields"><div><small>Institution</small><b>{detail.institution_id}</b></div><div><small>Report type</small><b>{detail.scenario?.label || selectedRecord.scenario_code}</b></div><div><small>Consent</small><b>{detail.consent_status}</b></div><div><small>Priority · human-set</small><b>{selectedRecord.priority}</b></div><div><small>Assignment</small><b>{selectedRecord.assigned_to_user_id ? (handlers.find((h) => h.id === selectedRecord.assigned_to_user_id)?.full_name || `Handler #${selectedRecord.assigned_to_user_id}`) : "Unassigned"}</b></div><div><small>Received</small><b>{new Date(selectedRecord.created_at).toLocaleString()}</b></div></div>
+          <div className="notice"><Info /><p>{detail.scenario?.narrative || "Encrypted report content is available to authorised case handlers."} All workflow decisions remain human-led.</p></div>
+          <div className="case-actions" style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {detail.workflow_status === "received" && <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"acknowledge"))}>Acknowledge</button>}
+            {(["acknowledged","information_only","referral_pending_human_action","institutional_action_pending_human_action","emergency_escalation_pending_human_action"].includes(detail.workflow_status)) && <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"start_review"))}>Start review</button>}
+            {detail.workflow_status === "acknowledged" && <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"information_only","info_provided"))}>Information provided</button>}
+            {detail.workflow_status === "under_review" && <>
+              {detail.consent_status === "granted" && <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"refer","referral_requested"))}>Record referral decision</button>}
+              <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"institutional_action","institutional_process_requested"))}>Institutional process</button>
+              <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"emergency_escalation","human_escalation_recorded"))}>Record escalation</button>
+              <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"close","resolved"))}>Close — resolved</button>
+            </>}
+            {detail.workflow_status === "closed" && <button disabled={busy} onClick={() => run(() => api.caseWorkflow(selected,"reopen","reopened"))}>Reopen for review</button>}
           </div>
-          <div className="case-fields">
-            <div>
-              <small>Organisation</small>
-              <b>{item.organisation}</b>
-            </div>
-            <div>
-              <small>Record type</small>
-              <b>{item.type}</b>
-            </div>
-            <div>
-              <small>Received</small>
-              <b>{item.received}</b>
-            </div>
-            <div>
-              <small>Consent status</small>
-              <b>{item.consent}</b>
-            </div>
-          </div>
-          <div className="notice">
-            <Info />
-            <p>
-              The demonstrator illustrates workflow controls only. It does not
-              determine risk, make safeguarding decisions or contact anyone.
-            </p>
-          </div>
-          <div className="case-actions">
-            <button
-              onClick={() =>
-                setStatuses({ ...statuses, [item.id]: "Acknowledged" })
-              }
-            >
-              Acknowledge
-            </button>
-            <button
-              onClick={() =>
-                setStatuses({ ...statuses, [item.id]: "Under review" })
-              }
-            >
-              Mark under review
-            </button>
-            <button
-              onClick={() =>
-                setStatuses({
-                  ...statuses,
-                  [item.id]: "Referral pathway illustrated",
-                })
-              }
-            >
-              View referral pathway
-            </button>
-          </div>
-        </div>
+          <div className="panel-box" style={{marginTop:16}}><h3>Assignment</h3><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><select aria-label="Assign case handler" id="case-handler-select"><option value="">Select case handler</option>{handlers.filter((h) => h.institution_id === selectedRecord.institution_id).map((h) => <option key={h.id} value={h.id}>{h.full_name}</option>)}</select><button disabled={busy || !handlers.some((h) => h.institution_id === selectedRecord.institution_id)} onClick={() => { const el = document.getElementById("case-handler-select") as HTMLSelectElement | null; if (el?.value) run(() => api.assignCase(selected,Number(el.value))); }}>Assign</button></div><label style={{display:"block",marginTop:12}}>Priority <select value={selectedRecord.priority} onChange={(e) => run(() => api.setCasePriority(selected,e.target.value))}><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label></div>
+          <div className="panel-box" style={{marginTop:16}}><h3>Structured activity notes</h3><p>Predefined synthetic activity markers only; no free-text narratives are accepted in this demonstrator.</p><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{[{code:"information_provided",label:"Information provided"},{code:"consent_checked",label:"Consent checked"},{code:"referral_discussed",label:"Referral discussed"},{code:"follow_up_required",label:"Follow-up required"},{code:"closure_reviewed",label:"Closure reviewed"}].map((n) => <button key={n.code} disabled={busy} onClick={() => run(() => api.addCaseNote(selected,n.code))}>{n.label}</button>)}</div><ul>{notes.map((n) => <li key={n.id}>{n.label} · {new Date(n.created_at).toLocaleString()}</li>)}</ul><button disabled={busy} onClick={() => run(async () => { const result = await api.caseAudit(selected); setAudit(result); })}>Verify audit trail</button>{audit && <div className="notice"><b>Audit integrity: {audit.integrity_valid ? "Valid" : "Failed"}</b><ul>{audit.events.map((event) => <li key={event.sequence}>{event.action} · {new Date(event.created_at).toLocaleString()}</li>)}</ul></div>}</div>
+        </div>}
       </div>
     </>
   );

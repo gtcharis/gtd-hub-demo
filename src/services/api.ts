@@ -43,6 +43,17 @@ export const api = {
   health: () => request<ApiHealth>("/api/v1/health"),
   createDemoCase: (payload: { institution_id: number; scenario_code: string; anonymous: boolean; consent_to_referral: boolean }) =>
     request<{ case_ref: string; workflow_status: string; consent_status: string; synthetic: boolean; message: string }>("/api/v1/cases", { method: "POST", body: JSON.stringify(payload) }),
+  caseDashboard: () => request<{ total: number; assigned_to_me: number; unassigned: number; by_status: Record<string, number> }>("/api/v1/case-management/dashboard"),
+  caseQueue: (status = "", assigned = "all") => request<CaseRecord[]>(`/api/v1/case-management/queue?status=${encodeURIComponent(status)}&assigned=${encodeURIComponent(assigned)}`),
+  caseDetail: (caseRef: string) => request<{ case_ref: string; institution_id: number; workflow_status: string; consent_status: string; synthetic: boolean; scenario: { label: string; narrative: string } }>(`/api/v1/cases/${encodeURIComponent(caseRef)}`),
+  caseHandlers: (institutionId?: number) => request<Array<{ id: number; full_name: string; institution_id: number }>>(`/api/v1/case-management/handlers${institutionId ? `?institution_id=${institutionId}` : ""}`),
+  assignCase: (caseRef: string, assignedToUserId: number) => request<{ case_ref: string; assigned_to_user_id: number; assigned_at: string }>(`/api/v1/cases/${encodeURIComponent(caseRef)}/assign`, { method: "POST", body: JSON.stringify({ assigned_to_user_id: assignedToUserId }) }),
+  caseWorkflow: (caseRef: string, action: string, decisionCode?: string) => request<{ case_ref: string; workflow_status: string; human_action_recorded: boolean; external_action_performed: boolean }>(`/api/v1/cases/${encodeURIComponent(caseRef)}/workflow`, { method: "POST", body: JSON.stringify({ action, decision_code: decisionCode }) }),
+  setCasePriority: (caseRef: string, priority: string) => request<{ case_ref: string; priority: string }>(`/api/v1/cases/${encodeURIComponent(caseRef)}/priority`, { method: "PATCH", body: JSON.stringify({ priority }) }),
+  addCaseNote: (caseRef: string, noteCode: string) => request<{ id: number; case_ref: string; note_code: string; label: string; created_at: string; synthetic: boolean }>(`/api/v1/cases/${encodeURIComponent(caseRef)}/notes`, { method: "POST", body: JSON.stringify({ note_code: noteCode }) }),
+  caseNotes: (caseRef: string) => request<Array<{ id: number; author_user_id: number; note_code: string; label: string; created_at: string; synthetic: boolean }>>(`/api/v1/cases/${encodeURIComponent(caseRef)}/notes`),
+  caseAssignments: (caseRef: string) => request<Array<{ assigned_to_user_id: number; assigned_by_user_id: number; created_at: string }>>(`/api/v1/cases/${encodeURIComponent(caseRef)}/assignments`),
+  caseAudit: (caseRef: string) => request<{ integrity_valid: boolean; events: Array<{ sequence: number; action: string; actor_user_id: number | null; created_at: string; event_hash: string; previous_hash: string }> }>(`/api/v1/cases/${encodeURIComponent(caseRef)}/audit`),
   supportServices: () => request<Array<{ id: number; category: string; title: string; description: string; contact_label: string | null }>>("/api/v1/support/services"),
   demoOverview: () => request<Record<string, unknown>>("/api/v1/demo/overview"),
   demoMentors: () => request<Array<{ id: string; name: string; field: string; focus: string; institution: string }>>("/api/v1/demo/mentors"),
@@ -67,3 +78,5 @@ export const apiConfigured = Boolean(API_BASE);
 
 export type CommunityReply = { id:number; author_user_id:number; author_name:string; body:string; status:string; created_at:string };
 export type CommunityDiscussion = { id:number; title:string; category:string; body:string; status:string; author_user_id:number; author_name:string; institution_id:number; institution_name:string; created_at:string; updated_at:string; reply_count:number; replies:CommunityReply[] };
+
+export type CaseRecord = { case_ref: string; institution_id: number; scenario_code: string; workflow_status: string; consent_status: string; anonymous: boolean; priority: string; assigned_to_user_id: number | null; created_at: string; updated_at: string };

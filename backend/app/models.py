@@ -131,7 +131,7 @@ class SecureCase(Base):
     created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     anonymous: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     scenario_code: Mapped[str] = mapped_column(String(40), nullable=False)
-    workflow_status: Mapped[str] = mapped_column(String(30), nullable=False, default="received")
+    workflow_status: Mapped[str] = mapped_column(String(80), nullable=False, default="received")
     consent_status: Mapped[str] = mapped_column(String(20), nullable=False, default="not_granted")
     ciphertext: Mapped[bytes] = mapped_column(nullable=False)
     nonce: Mapped[bytes] = mapped_column(nullable=False)
