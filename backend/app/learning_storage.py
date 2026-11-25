@@ -108,36 +108,35 @@ class SupabaseStorage:
             else f"{self.base_url}/storage/v1{signed}"
         )
 
-    
-def delete(self, path: str):
-    """
-    Delete one object using Supabase's bucket-level remove operation.
-    """
+    def delete(self, path: str):
+        """
+        Delete one object using Supabase's bucket-level remove operation.
+        """
 
-    clean_path = path.lstrip("/")
+        clean_path = path.lstrip("/")
 
-    if not clean_path:
-        raise ValueError("Storage object path cannot be empty")
+        if not clean_path:
+            raise ValueError("Storage object path cannot be empty")
 
-    url = (
-        f"{self.base_url}/storage/v1/object/"
-        f"{quote(self.bucket, safe='')}"
-    )
-
-    response = httpx.request(
-        "DELETE",
-        url,
-        json={"prefixes": [clean_path]},
-        headers=self._headers(),
-        timeout=30,
-    )
-
-    if response.status_code in (200, 204):
-        logger.info(
-            "Supabase storage object deleted: bucket=%s, path=%s",
-            self.bucket,
-            clean_path,
+        url = (
+            f"{self.base_url}/storage/v1/object/"
+            f"{quote(self.bucket, safe='')}"
         )
-        return
 
-    self._raise_storage_error("delete", response)
+        response = httpx.request(
+            "DELETE",
+            url,
+            json={"prefixes": [clean_path]},
+            headers=self._headers(),
+            timeout=30,
+        )
+
+        if response.status_code in (200, 204):
+            logger.info(
+                "Supabase storage object deleted: bucket=%s, path=%s",
+                self.bucket,
+                clean_path,
+            )
+            return
+
+        self._raise_storage_error("delete", response)
