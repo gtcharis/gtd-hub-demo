@@ -11,8 +11,8 @@ from app.api.case_routes import router as case_router
 
 app = FastAPI(
     title="GTD Hub Demonstrator API",
-    version="0.3.2",
-    description="Authenticated proposal demonstrator API. Fictional demonstration data only.",
+    version="0.3.3",
+    description="Authenticated proposal demonstrator API. Fictional demonstration data only. v0.3.3 case-management workflows.",
 )
 origins = [x.strip() for x in os.getenv(
     "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,https://gtcharis.github.io"

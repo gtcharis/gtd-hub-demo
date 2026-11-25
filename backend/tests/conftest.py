@@ -45,6 +45,7 @@ def setup_database():
             ("programmeadmin@test.demo", "Test Programme Admin", "Programme Administrator", None),
             ("orgadmin-b@test.demo", "Test Organisation Admin B", "Organisation Administrator", c.id),
             ("mentor-b@test.demo", "Test Mentor B", "Mentor", c.id),
+            ("casehandler-b@test.demo", "Test Case Handler B", "Case Handler", c.id),
         ]
         created = {}
         for email, name, role, institution_id in users:

@@ -136,8 +136,32 @@ class SecureCase(Base):
     ciphertext: Mapped[bytes] = mapped_column(nullable=False)
     nonce: Mapped[bytes] = mapped_column(nullable=False)
     key_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    assigned_to_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    assigned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    priority: Mapped[str] = mapped_column(String(16), nullable=False, default="normal")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+class CaseAssignment(Base):
+    __tablename__ = "case_assignments"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    case_ref: Mapped[str] = mapped_column(ForeignKey("secure_cases.case_ref", ondelete="CASCADE"), index=True, nullable=False)
+    institution_id: Mapped[int] = mapped_column(ForeignKey("institutions.id"), index=True, nullable=False)
+    assigned_to_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    assigned_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+class CaseNote(Base):
+    __tablename__ = "case_notes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    case_ref: Mapped[str] = mapped_column(ForeignKey("secure_cases.case_ref", ondelete="CASCADE"), index=True, nullable=False)
+    institution_id: Mapped[int] = mapped_column(ForeignKey("institutions.id"), index=True, nullable=False)
+    author_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    note_code: Mapped[str] = mapped_column(String(48), nullable=False)
+    ciphertext: Mapped[bytes] = mapped_column(nullable=False)
+    nonce: Mapped[bytes] = mapped_column(nullable=False)
+    key_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
 class CaseAuditEvent(Base):
     __tablename__ = "case_audit_events"

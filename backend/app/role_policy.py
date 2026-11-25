@@ -23,6 +23,7 @@ ROLE_PERMISSIONS = MappingProxyType({
     "Organisation Administrator": frozenset({
         "dashboard:read", "organisation:read", "organisation:manage_users",
         "administration:read", "institution:read",
+        "community:read",
     }),
     "Programme Administrator": frozenset({
         "dashboard:read", "support:read", "reporting:create",
