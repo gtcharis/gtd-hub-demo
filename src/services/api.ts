@@ -110,6 +110,31 @@ export const api = {
     request<
       Array<{ id: number; name: string; code: string; is_active: boolean }>
     >("/api/v1/institutions"),
+  adminDashboard: () => request<{
+    scope: string; users_total: number; users_active: number; institutions_total: number;
+    mentors_active: number; community_discussions: number; mentorship_connections: number;
+    published_learning_resources: number; data_label: string;
+  }>("/api/v1/admin/dashboard"),
+  adminUsers: (q = "") => request<{ items: AdminUser[]; count: number }>(`/api/v1/admin/users?q=${encodeURIComponent(q)}`),
+  createAdminUser: (payload: { email: string; full_name: string; password: string; role: string; institution_id: number | null }) =>
+    request<AdminUser>("/api/v1/admin/users", { method: "POST", body: JSON.stringify(payload) }),
+  updateAdminUser: (id: number, payload: { full_name?: string; role?: string; institution_id?: number | null; is_active?: boolean }) =>
+    request<AdminUser>(`/api/v1/admin/users/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  adminInstitutions: () => request<{ items: AdminInstitution[]; count: number }>("/api/v1/admin/institutions"),
+  createAdminInstitution: (payload: { name: string; code: string }) =>
+    request<AdminInstitution>("/api/v1/admin/institutions", { method: "POST", body: JSON.stringify(payload) }),
+  updateAdminInstitution: (id: number, payload: { name?: string; code?: string; is_active?: boolean }) =>
+    request<AdminInstitution>(`/api/v1/admin/institutions/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  adminAudit: () => request<AdminAuditItem[]>("/api/v1/admin/audit"),
+  adminInsights: (institutionId?: number) => request<AdminInsights>(`/api/v1/admin/insights${institutionId ? `?institution_id=${institutionId}` : ""}`),
+  downloadMeReport: async () => {
+    if (!API_BASE) throw new Error("API base URL is not configured.");
+    const headers = new Headers();
+    if (authToken) headers.set("Authorization", `Bearer ${authToken}`);
+    const response = await fetch(`${API_BASE}/api/v1/admin/reports/m-e.csv`, { headers, credentials: "omit" });
+    if (!response.ok) throw new Error("Could not export the M&E report.");
+    return response.blob();
+  },
   learningCategories: () =>
     request<LearningCategory[]>("/api/v1/learning/categories"),
   learningResources: (q = "", categoryId?: number) =>
@@ -414,3 +439,8 @@ export type CaseRecord = {
   created_at: string;
   updated_at: string;
 };
+
+export type AdminUser = { id: number; email: string; full_name: string; role: string; institution_id: number | null; institution_name: string | null; is_active: boolean; created_at: string };
+export type AdminInstitution = { id: number; name: string; code: string; is_active: boolean; created_at: string };
+export type AdminAuditItem = { id: number; actor_user_id: number | null; action: string; target_type: string; target_id: string; institution_id: number | null; details: Record<string, unknown>; created_at: string };
+export type AdminInsights = { scope: string; institution_id: number | null; registered_users: number; active_accounts: number; mentors: number; mentorship_requests: number; active_mentorship_connections: number; community_discussions: number; published_learning_resources: number; case_data_included: false; data_label: string };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   Activity,
   ArrowLeft,
@@ -41,6 +41,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { api } from "../services/api";
+import { useAuth } from "../features/auth/AuthContext";
 import {
   activities,
   cases,
@@ -1038,50 +1039,27 @@ export function Organisation({
   selected: string;
   setSelected: (v: string) => void;
 }) {
-  return (
-    <>
-      <PageTitle
-        eyebrow="ORGANISATION WORKSPACE"
-        title="Organisation overview"
-        description="A proposed organisation-scoped view for local administrators."
-      />
-      <label className="select-label">
-        DEMO ORGANISATION
-        <select value={selected} onChange={(e) => setSelected(e.target.value)}>
-          {organisations.map((o) => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
-      </label>
-      <div className="metric-grid">
-        {[
-          { v: "284", l: "Members" },
-          { v: "62", l: "Mentorship connections" },
-          { v: "18", l: "Learning activities" },
-          { v: "76%", l: "Illustrative engagement" },
-        ].map((x) => (
-          <div className="admin-metric" key={x.l}>
-            <b>{x.v}</b>
-            <span>{x.l}</span>
-          </div>
-        ))}
-      </div>
-      <div className="panel-box">
-        <h2>Organisation workspace</h2>
-        <p>
-          Illustrative overview of member engagement, programme activities and
-          support information configuration.
-        </p>
-        <div className="admin-actions">
-          <button>Member directory · Preview</button>
-          <button>Role assignments · Preview</button>
-          <button>Support directory · Preview</button>
-          <button>Organisation reports · Preview</button>
-        </div>
-      </div>
-    </>
-  );
+  const [metrics, setMetrics] = useState<any>(null);
+  const [error, setError] = useState("");
+  useEffect(() => { api.adminInsights().then(setMetrics).catch((e) => setError(e instanceof Error ? e.message : "Unable to load institutional indicators.")); }, []);
+  const values = metrics ? [
+    [metrics.registered_users, "Registered accounts"], [metrics.active_accounts, "Active accounts"],
+    [metrics.mentors, "Active mentors"], [metrics.active_mentorship_connections, "Active mentorship connections"],
+    [metrics.mentorship_requests, "Mentorship requests"], [metrics.community_discussions, "Community discussions"],
+    [metrics.published_learning_resources, "Published learning resources"],
+  ] : [];
+  return <>
+    <PageTitle eyebrow="INSTITUTIONAL WORKSPACE" title="Institution overview" description="Institution-scoped aggregate indicators and administrative workspace." />
+    {error && <div className="notice"><Info /><p>{error}</p></div>}
+    {!metrics && !error && <div className="panel-box">Loading institutional indicators…</div>}
+    {metrics && <>
+      <div className="metric-grid">{values.map(([v, label]) => <div className="admin-metric" key={label}><b>{v}</b><span>{label}</span></div>)}</div>
+      <div className="panel-box"><h2>Institutional activity</h2><p>Counts reflect available records assigned to this institution. They are not outcome or impact measures.</p><p className="muted">{metrics.data_label}</p></div>
+    </>}
+    <div className="notice"><Info /><p>Only aggregate non-case indicators are displayed. GBV narratives, contact information and identifiable case-level records are excluded.</p></div>
+  </>;
 }
+
 export function Programme({
   selected,
   setSelected,
@@ -1089,106 +1067,112 @@ export function Programme({
   selected: string;
   setSelected: (v: string) => void;
 }) {
-  return (
-    <>
-      <PageTitle
-        eyebrow="PROGRAMME MONITORING & LEARNING"
-        title="Programme insights"
-        description="Illustrative aggregated indicators across participating organisations."
-      />
-      <label className="select-label">
-        SCOPE
-        <select value={selected} onChange={(e) => setSelected(e.target.value)}>
-          {organisations.map((o) => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
-      </label>
-      <div className="metric-grid">
-        {[
-          { v: "1,248", l: "Registered members" },
-          { v: "486", l: "Weekly active users" },
-          { v: "71%", l: "Monthly active users" },
-          { v: "362", l: "Mentorship connections" },
-        ].map((x) => (
-          <div className="admin-metric" key={x.l}>
-            <b>{x.v}</b>
-            <span>{x.l}</span>
-          </div>
-        ))}
-      </div>
-      <div className="panel-box">
-        <h2>Engagement trend</h2>
-        <div className="bar-chart">
-          {[42, 55, 49, 68, 61, 82, 75, 91, 72, 86, 94, 80].map((v, i) => (
-            <div
-              key={i}
-              style={{ height: `${v}%` }}
-              title={`Illustrative period ${i + 1}: ${v}%`}
-            />
-          ))}
-        </div>
-        <div className="chart-legend">
-          <span>Illustrative monthly activity index</span>
-          <span>Sample data only</span>
-        </div>
-      </div>
-      <div className="notice">
-        <Info />
-        <p>
-          Metrics are fictional and do not represent project monitoring results.
-          Production indicators and definitions would be agreed with project
-          partners and researchers.
-        </p>
-      </div>
-    </>
-  );
+  const [metrics, setMetrics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    setLoading(true); setError("");
+    api.adminInsights().then(setMetrics).catch((e) => setError(e instanceof Error ? e.message : "Unable to load programme indicators.")).finally(() => setLoading(false));
+  }, []);
+  const cards = metrics ? [
+    [metrics.registered_users, "Registered accounts"],
+    [metrics.active_accounts, "Active accounts"],
+    [metrics.mentors, "Active mentors"],
+    [metrics.active_mentorship_connections, "Active mentorship connections"],
+    [metrics.mentorship_requests, "Mentorship requests"],
+    [metrics.community_discussions, "Community discussions"],
+    [metrics.published_learning_resources, "Published learning resources"],
+  ] : [];
+  const download = async () => {
+    try { const blob = await api.downloadMeReport(); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "gtdhub-me-aggregate-report.csv"; a.click(); URL.revokeObjectURL(url); }
+    catch (e) { setError(e instanceof Error ? e.message : "Report export failed."); }
+  };
+  return <>
+    <PageTitle eyebrow="PROGRAMME MONITORING & LEARNING" title="Programme insights" description="De-identified aggregate indicators calculated from available demonstrator records." />
+    <div className="admin-toolbar"><span className="muted">Programme-wide scope · aggregate records only</span><button className="primary-button" onClick={() => void download()}>Export M&E CSV</button></div>
+    {loading && <div className="panel-box">Loading programme indicators…</div>}
+    {error && <div className="notice"><Info /><p>{error}</p></div>}
+    {!loading && metrics && <>
+      <div className="metric-grid">{cards.map(([value, label]) => <div className="admin-metric" key={label}><b>{value}</b><span>{label}</span></div>)}</div>
+      <div className="panel-box"><h2>Indicator interpretation</h2><p>These are counts of records currently available in the demonstrator. They do not measure participant outcomes, wellbeing, institutional change or programme impact.</p><p className="muted">{metrics.data_label}</p></div>
+    </>}
+    <div className="notice"><Info /><p>GBV case narratives, contact details and identifiable case-level information are excluded from these indicators and exports. Safeguarding decisions remain with authorised human personnel.</p></div>
+  </>;
 }
+
 export function Administration({ notify }: { notify: (s: string) => void }) {
-  const items = [
-    ["Members & invitations", "Illustrative member administration", Users],
-    [
-      "Roles & permissions",
-      "Role and organisation access concepts",
-      ShieldCheck,
-    ],
-    ["Organisation settings", "Workspace configuration", Building2],
-    [
-      "Support directory",
-      "Service information and referral configuration",
-      LifeBuoy,
-    ],
-    ["Notifications", "Communication preferences and templates", Bell],
-    [
-      "Audit & governance",
-      "Access history and oversight concepts",
-      ClipboardList,
-    ],
-  ];
-  return (
-    <>
-      <PageTitle
-        eyebrow="PLATFORM GOVERNANCE"
-        title="Administration"
-        description="Explore the proposed administration areas. Controls are illustrative and do not change a live platform."
-      />
-      <div className="admin-grid">
-        {items.map(([t, d, I]: any) => (
-          <button
-            className="admin-tile"
-            key={t}
-            onClick={() => notify(`${t}: configuration preview only.`)}
-          >
-            <I size={27} />
-            <b>{t}</b>
-            <span>{d}</span>
-            <ArrowRight size={16} />
-          </button>
-        ))}
-      </div>
-    </>
-  );
+  const { user } = useAuth();
+  const [tab, setTab] = useState("users");
+  const [users, setUsers] = useState<any[]>([]);
+  const [institutions, setInstitutions] = useState<any[]>([]);
+  const [dashboard, setDashboard] = useState<any>(null);
+  const [audit, setAudit] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ email: "", full_name: "", password: "", role: "Member", institution_id: user?.institution_id ?? 0 });
+  const [newInstitution, setNewInstitution] = useState({ name: "", code: "" });
+  const isProgrammeAdmin = user?.role === "Programme Administrator";
+  const canAudit = user?.permissions.includes("administration:audit");
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [u, i, a, d] = await Promise.all([
+        api.adminUsers(search), api.adminInstitutions(), canAudit ? api.adminAudit() : Promise.resolve([]), api.adminDashboard(),
+      ]);
+      setUsers(u.items); setInstitutions(i.items); setAudit(a); setDashboard(d);
+    } catch (error) { notify(error instanceof Error ? error.message : "Could not load administration data."); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { void load(); }, [search]);
+  const submitUser = async (event: FormEvent) => {
+    event.preventDefault();
+    try {
+      await api.createAdminUser({ ...newUser, institution_id: newUser.role === "Programme Administrator" ? null : Number(newUser.institution_id) });
+      setNewUser({ email: "", full_name: "", password: "", role: "Member", institution_id: user?.institution_id ?? 0 });
+      setFormOpen(false); await load(); notify("User account created.");
+    } catch (error) { notify(error instanceof Error ? error.message : "Could not create user."); }
+  };
+  const changeUser = async (id: number, patch: Record<string, unknown>) => {
+    try { await api.updateAdminUser(id, patch as any); await load(); notify("User updated. Existing sessions were revoked where access changed."); }
+    catch (error) { notify(error instanceof Error ? error.message : "Could not update user."); }
+  };
+  const submitInstitution = async (event: FormEvent) => {
+    event.preventDefault();
+    try { await api.createAdminInstitution(newInstitution); setNewInstitution({ name: "", code: "" }); await load(); notify("Institution created."); }
+    catch (error) { notify(error instanceof Error ? error.message : "Could not create institution."); }
+  };
+  const downloadReport = async () => {
+    try {
+      const blob = await api.downloadMeReport(); const url = URL.createObjectURL(blob);
+      const link = document.createElement("a"); link.href = url; link.download = "gtdhub-me-aggregate-report.csv"; link.click(); URL.revokeObjectURL(url);
+    } catch (error) { notify(error instanceof Error ? error.message : "Report export failed."); }
+  };
+  return <>
+    <PageTitle eyebrow="PLATFORM GOVERNANCE" title="Administration" description="Manage demonstrator accounts and institutions, and review administrative activity within your authorised scope." />
+    {dashboard && <div className="metric-grid admin-summary-grid">{[[dashboard.users_total, "Accounts"], [dashboard.users_active, "Active accounts"], [dashboard.institutions_total, "Institutions in scope"], [dashboard.mentors_active, "Active mentors"], [dashboard.mentorship_connections, "Mentorship connections"], [dashboard.published_learning_resources, "Published resources"]].map(([v, label]) => <div className="admin-metric" key={label}><b>{v}</b><span>{label}</span></div>)}</div>}
+    <div className="admin-tabs">
+      {["users", "institutions", "audit"].filter((x) => x !== "audit" || canAudit).map((x) => <button key={x} className={tab === x ? "active" : ""} onClick={() => setTab(x)}>{x === "users" ? "Users & roles" : x === "institutions" ? "Institutions" : "Audit trail"}</button>)}
+    </div>
+    {tab === "users" && <section className="panel-box">
+      <div className="admin-toolbar"><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name or email" /><button className="primary-button" onClick={() => setFormOpen(!formOpen)}>Add user</button></div>
+      {formOpen && <form className="admin-form" onSubmit={submitUser}>
+        <input required type="text" placeholder="Full name" value={newUser.full_name} onChange={(e) => setNewUser({ ...newUser, full_name: e.target.value })} />
+        <input required type="email" placeholder="Email address" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+        <input required type="password" minLength={12} placeholder="Temporary password (12+ characters)" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
+        <select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}>{["Member", "Mentor", "Moderator", "Case Handler", ...(isProgrammeAdmin ? ["Organisation Administrator", "Programme Administrator"] : [])].map((r) => <option key={r}>{r}</option>)}</select>
+        {isProgrammeAdmin && <select value={newUser.institution_id} onChange={(e) => setNewUser({ ...newUser, institution_id: Number(e.target.value) })}><option value={0}>Select institution</option>{institutions.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>}
+        <button className="primary-button" type="submit">Create account</button>
+      </form>}
+      {loading ? <p>Loading accounts…</p> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Institution</th><th>Status</th><th>Action</th></tr></thead><tbody>{users.map((u) => <tr key={u.id}><td>{u.full_name}</td><td>{u.email}</td><td><select aria-label={`Role for ${u.full_name}`} value={u.role} disabled={u.id === user?.id || u.role === "Programme Administrator" || (!isProgrammeAdmin && u.role === "Organisation Administrator")} onChange={(e) => void changeUser(u.id, { role: e.target.value })}>{["Member", "Mentor", "Moderator", "Case Handler", ...(isProgrammeAdmin ? ["Organisation Administrator", "Programme Administrator"] : [])].map((r) => <option key={r}>{r}</option>)}</select></td><td>{isProgrammeAdmin && u.role !== "Programme Administrator" ? <select aria-label={`Institution for ${u.full_name}`} value={u.institution_id ?? ""} onChange={(e) => void changeUser(u.id, { institution_id: Number(e.target.value) })}>{institutions.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select> : (u.institution_name || "Programme")}</td><td>{u.is_active ? "Active" : "Inactive"}</td><td><button disabled={u.id === user?.id} onClick={() => void changeUser(u.id, { is_active: !u.is_active })}>{u.is_active ? "Deactivate" : "Activate"}</button></td></tr>)}</tbody></table></div>}
+      <p className="muted">Password values are never displayed. Account access changes revoke existing sessions.</p>
+    </section>}
+    {tab === "institutions" && <section className="panel-box"><h2>Participating institutions</h2>{isProgrammeAdmin && <form className="admin-form" onSubmit={submitInstitution}><input required placeholder="Institution name" value={newInstitution.name} onChange={(e) => setNewInstitution({ ...newInstitution, name: e.target.value })} /><input required placeholder="Institution code" value={newInstitution.code} onChange={(e) => setNewInstitution({ ...newInstitution, code: e.target.value.toUpperCase() })} /><button className="primary-button">Add institution</button></form>}<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Institution</th><th>Code</th><th>Status</th>{isProgrammeAdmin && <th>Action</th>}</tr></thead><tbody>{institutions.map((i) => <tr key={i.id}><td>{i.name}</td><td>{i.code}</td><td>{i.is_active ? "Active" : "Inactive"}</td>{isProgrammeAdmin && <td><button onClick={async () => { const name = window.prompt("Institution name", i.name); if (name === null) return; const code = window.prompt("Institution code", i.code); if (code === null) return; try { await api.updateAdminInstitution(i.id, { name, code }); await load(); notify("Institution updated."); } catch (e) { notify(e instanceof Error ? e.message : "Update failed"); } }}>Edit</button> <button onClick={async () => { try { await api.updateAdminInstitution(i.id, { is_active: !i.is_active }); await load(); } catch (e) { notify(e instanceof Error ? e.message : "Update failed"); } }}>{i.is_active ? "Deactivate" : "Activate"}</button></td>}</tr>)}</tbody></table></div></section>}
+    {tab === "audit" && <section className="panel-box"><h2>Administrative audit events</h2><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Time</th><th>Actor ID</th><th>Action</th><th>Target</th><th>Institution</th></tr></thead><tbody>{audit.map((e) => <tr key={e.id}><td>{new Date(e.created_at).toLocaleString()}</td><td>{e.actor_user_id ?? "System"}</td><td>{e.action}</td><td>{e.target_type} · {e.target_id}</td><td>{e.institution_id ?? "Programme"}</td></tr>)}</tbody></table></div></section>}
+    <p className="notice">Administrative actions are logged. This demonstrator uses synthetic data; do not enter real participant or GBV case information.</p>
+  </>;
 }
+
 export function Help() {
   return (
     <>

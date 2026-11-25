@@ -1,6 +1,6 @@
 # GTD Hub — Gender-Transformative Digital Hub
 
-**Current development baseline: v0.3.4 — Learning Library**
+**Current development target: v0.3.5 — Administration, Institutional Insights & M&E (implementation in progress)**
 
 A mobile-first, responsive and installable Progressive Web Application (PWA) demonstrator for the Gender-Transformative Digital Hub (GTD Hub), supporting the PROGEN-Hub for STEM programme.
 
@@ -145,6 +145,29 @@ It provides:
 - Password visibility and copy controls.
 
 The panel is intended for proposal evaluation and demonstrator access. It must only be enabled where the accounts contain synthetic data and have appropriately limited permissions.
+
+## 3A. Post-Submission Demonstrator Enhancements
+
+The following capabilities were added or are being developed after the original consultancy application was submitted. They are demonstrator enhancements intended to make the technical demonstration more useful; they should not be interpreted as features promised in the original application submission.
+
+### v0.3.4 — Learning Library enhancement
+- Learning catalogue with categories, search and resource metadata.
+- Support for approved document uploads and external learning links.
+- Draft, published and archived resource states.
+- Private Supabase Storage with backend-authorised access.
+
+### v0.3.5 — Administration, Institutional Insights & M&E enhancement
+- Administrative dashboard using available database records rather than illustrative headline figures.
+- User account administration, role assignment and activation/deactivation.
+- Institution creation, editing and activation/deactivation for Programme Administrators.
+- Institution-scoped access for Organisation Administrators and programme-wide access for Programme Administrators.
+- Administrative audit visibility for account and institution changes.
+- De-identified aggregate indicators for user accounts, mentorship, community activity and published learning resources.
+- Aggregate CSV export for M&E review.
+
+The v0.3.5 indicators describe records available in the demonstrator. They are not participant outcome measures, impact findings or verified programme M&E results. GBV case narratives, contact details and identifiable case-level information are excluded from dashboards and M&E exports. Human personnel retain all safeguarding decision-making authority.
+
+The v0.3.4 learning-resource deletion interface has a known delayed-refresh behaviour and is deferred for a later correction; it is not represented as fixed in v0.3.5.
 
 ## 4. Demonstration Accounts
 

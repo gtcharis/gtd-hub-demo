@@ -3503,3 +3503,14 @@ select:focus-visible {
     padding: 7px 8px;
   }
 }
+
+/* v0.3.5 administration workspace */
+.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.admin-tabs button,.admin-table button{border:1px solid var(--line,#ddd);border-radius:9px;padding:9px 13px;background:var(--surface,#fff);color:inherit;cursor:pointer}
+.admin-tabs button.active,.primary-button{background:var(--brand,#54258b);color:#fff;border-color:transparent}
+.admin-toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.admin-toolbar input,.admin-form input,.admin-form select,.admin-table select{border:1px solid var(--line,#ddd);border-radius:8px;padding:10px 12px;background:var(--surface,#fff);color:inherit;min-width:180px}
+.admin-form{display:flex;gap:10px;flex-wrap:wrap;padding:14px 0;margin:8px 0 18px;border-top:1px solid var(--line,#ddd);border-bottom:1px solid var(--line,#ddd)}
+.admin-form input{flex:1 1 190px}.admin-form button,.admin-toolbar button{border:0;border-radius:9px;padding:10px 14px;cursor:pointer}
+.admin-table-wrap{width:100%;overflow-x:auto}.admin-table{width:100%;border-collapse:collapse;font-size:13px}.admin-table th,.admin-table td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line,#ddd);white-space:nowrap}.admin-table th{font-weight:700;color:var(--muted,#666)}
+.muted{color:var(--muted,#666);font-size:13px}

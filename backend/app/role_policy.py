@@ -22,7 +22,7 @@ ROLE_PERMISSIONS = MappingProxyType({
     }),
     "Organisation Administrator": frozenset({
         "dashboard:read", "organisation:read", "organisation:manage_users",
-        "administration:read", "institution:read",
+        "administration:read", "administration:audit", "institution:read", "institution:manage_own",
         "community:read", "learning:read", "learning:manage",
     }),
     "Programme Administrator": frozenset({
@@ -31,7 +31,7 @@ ROLE_PERMISSIONS = MappingProxyType({
         "community:read", "community:create", "community:manage_own", "community:moderate", "learning:read",
         "cases:read", "cases:manage",
         "organisation:read", "organisation:manage_users",
-        "administration:read", "institution:read",
+        "administration:read", "administration:audit", "institution:read",
         "institution:read_all", "institution:manage_all",
         "programme:read", "programme:manage", "learning:manage",
     }),

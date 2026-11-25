@@ -225,3 +225,16 @@ class LearningAuditEvent(Base):
     previous_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     event_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class AdminAuditEvent(Base):
+    """Administrative audit trail; deliberately excludes case-level content."""
+    __tablename__ = "admin_audit_events"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    actor_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    action: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    target_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    target_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    institution_id: Mapped[int | None] = mapped_column(ForeignKey("institutions.id"), nullable=True, index=True)
+    details_json: Mapped[str] = mapped_column(String(1200), nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
