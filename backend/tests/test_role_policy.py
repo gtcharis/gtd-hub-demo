@@ -17,3 +17,14 @@ def test_institution_scope_policy():
     assert role_can_access_institution("Organisation Administrator", 4, 4)
     assert not role_can_access_institution("Organisation Administrator", 4, 5)
     assert not role_can_access_institution("Member", 4, 4)
+
+
+def test_learning_library_permissions_are_role_scoped():
+    assert "learning:read" in permissions_for_role("Member")
+    assert "learning:read" in permissions_for_role("Mentor")
+    assert "learning:read" in permissions_for_role("Moderator")
+    assert "learning:manage" not in permissions_for_role("Member")
+    assert "learning:manage" not in permissions_for_role("Mentor")
+    assert "learning:manage" in permissions_for_role("Organisation Administrator")
+    assert "learning:manage" in permissions_for_role("Programme Administrator")
+    assert "learning:read" not in permissions_for_role("Case Handler")

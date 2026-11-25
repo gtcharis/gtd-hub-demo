@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse, tags=["health"])
 def health():
-    return {"status": "ok", "service": "gtd-hub-demo-api", "version": "0.3.3"}
+    return {"status": "ok", "service": "gtd-hub-demo-api", "version": "0.3.4"}
 
 @router.get("/demo/overview", response_model=OverviewResponse, tags=["demonstration"])
 def demo_overview(user: User = Depends(require_permission("dashboard:read"))):

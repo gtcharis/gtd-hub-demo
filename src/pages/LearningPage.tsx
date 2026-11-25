@@ -1,1 +1,1 @@
-export { Learning as default } from "./ScreenComponents";
+export { default } from "../features/learning/LearningPage";

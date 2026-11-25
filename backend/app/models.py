@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, Text, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -172,6 +172,56 @@ class CaseAuditEvent(Base):
     actor_user_id: Mapped[int | None] = mapped_column(nullable=True)
     action: Mapped[str] = mapped_column(String(40), nullable=False)
     event_json: Mapped[str] = mapped_column(String(1200), nullable=False)
+    previous_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    event_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class LearningCategory(Base):
+    __tablename__ = "learning_categories"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    description: Mapped[str] = mapped_column(String(300), nullable=False, default="")
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+class LearningResource(Base):
+    __tablename__ = "learning_resources"
+    __table_args__ = (
+        CheckConstraint("source_type IN ('upload', 'external_link')", name="ck_learning_resources_source_type"),
+        CheckConstraint("status IN ('draft', 'published', 'archived')", name="ck_learning_resources_status"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(180), nullable=False, index=True)
+    description: Mapped[str] = mapped_column(String(1600), nullable=False, default="")
+    category_id: Mapped[int] = mapped_column(ForeignKey("learning_categories.id"), nullable=False, index=True)
+    resource_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    source_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    storage_path: Mapped[str | None] = mapped_column(String(500), nullable=True, unique=True)
+    original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    mime_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    external_url: Mapped[str | None] = mapped_column(String(1200), nullable=True)
+    publisher: Mapped[str | None] = mapped_column(String(180), nullable=True)
+    keywords: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    institution_id: Mapped[int | None] = mapped_column(ForeignKey("institutions.id"), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft", index=True)
+    created_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    updated_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    category: Mapped[LearningCategory] = relationship()
+    institution: Mapped[Institution | None] = relationship()
+
+class LearningAuditEvent(Base):
+    __tablename__ = "learning_audit_events"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sequence: Mapped[int] = mapped_column(nullable=False, unique=True)
+    resource_id: Mapped[int | None] = mapped_column(ForeignKey("learning_resources.id", ondelete="SET NULL"), nullable=True, index=True)
+    actor_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    event_json: Mapped[str] = mapped_column(Text, nullable=False)
     previous_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     event_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
