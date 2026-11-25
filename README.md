@@ -1,23 +1,181 @@
-# GTD Hub — Support, Safe Reporting and Secure Case Data v0.3.2
+# GTD Hub — Gender-Transformative Digital Hub
 
-A mobile-first, responsive and installable PWA demonstrator for the GTD Hub programme.
+**Current development baseline: v0.3.4 — Learning Library**
 
-## Demonstrator boundary
+A mobile-first, responsive and installable Progressive Web Application (PWA) demonstrator for the Gender-Transformative Digital Hub (GTD Hub), supporting the PROGEN-Hub for STEM programme.
 
-The application uses fictional identities, institutions and records. It is not a live GBV reporting channel and must not be used to submit real personal information, disclosures or safeguarding cases.
+## 1. Demonstrator Boundary
 
-## Stack
+The application uses fictional identities, institutions, accounts and records.
 
-- React 18, TypeScript and Vite
-- FastAPI
-- SQLAlchemy and Alembic
-- PostgreSQL only for all environments and tests
-- Argon2 password hashing and revocable opaque bearer sessions
+**This is not a live GBV reporting channel.** It must not be used to submit real personal information, disclosures, safeguarding cases or confidential institutional records.
+
+The platform demonstrates digital workflows and technical capabilities. Safeguarding triage, referrals, escalation, case decisions and closure remain the responsibility of authorised human personnel.
+
+All support-directory entries and demonstration scenarios must be treated as illustrative unless verified and approved by FAWEZI, BUSE and the relevant participating institutions.
+
+## 2. Technology Stack
+
+### Frontend
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Lucide React
 - PWA via `vite-plugin-pwa`
 
-## Frontend setup
+### Backend
+- Python FastAPI
+- SQLAlchemy
+- Alembic database migrations
+- PostgreSQL
+- Argon2 password hashing
+- Revocable opaque bearer-token sessions
 
-At the repository root:
+### File storage
+- Supabase Storage
+- Private `gtdhub-learning-resources` bucket
+- Backend-authorised, short-lived signed access URLs
+- PostgreSQL stores resource metadata; binary documents are stored separately.
+
+**PostgreSQL is required for all environments and tests. SQLite is not supported.**
+
+## 3. Current Demonstrator Capabilities
+
+### v0.2.4 — Authentication Foundation
+- Institutions, users and revocable login sessions.
+- Argon2 password hashing.
+- Login, current-user and logout endpoints.
+- Six fictional demonstration role accounts.
+- Authenticated access to demonstration overview and mentor APIs.
+- Role-aware frontend navigation and role-specific landing destinations.
+- Login session restoration on refresh.
+
+### v0.2.5 — RBAC Foundation
+- Role-based access control foundation.
+- Permission-aware navigation and backend authorisation.
+- Institutional access boundaries.
+- Role-specific capabilities and access restrictions.
+
+### v0.3.0 — Mentorship
+- Mentor directory and profiles.
+- Mentorship discovery and profile presentation.
+- Role-aware mentorship access.
+- Demonstration mentor records.
+
+### v0.3.1 — Community
+- Community functionality and associated role-aware access.
+- Demonstration community experience.
+
+### v0.3.2 — Support, Safe Reporting and Secure Case Data
+
+**Support directory**
+- Psychosocial Support.
+- Health Services.
+- Legal Information and Assistance.
+- Institutional Support.
+- Peer Support and Mentorship.
+- Searchable support information and expandable service details.
+
+**Safe reporting**
+- Submission of predefined synthetic scenarios.
+- Anonymous and identified demonstration modes.
+- Submission receipts.
+- Recorded consent and withdrawal functionality.
+- Encrypted case payload persistence.
+
+**Secure case data**
+- AES-256-GCM authenticated encryption.
+- Unique 96-bit nonces.
+- Associated data binding encrypted payloads to case references, institutions and schema versions.
+- HMAC-SHA-256 audit hash chain.
+- Minimal audit metadata rather than plaintext narratives or contact details.
+- PostgreSQL transaction advisory locking for audit-chain appends.
+
+The demonstrator does not accept free-text GBV narratives or real contact details.
+
+### v0.3.3 — Full Case Management
+
+Extends the encrypted reporting foundation with:
+
+- Institution-scoped case queues.
+- Case Handler assignment.
+- Assignment history.
+- Human-validated workflow transitions.
+- Human-set case priority.
+- Encrypted structured case activity notes.
+- Case audit inspection.
+- Programme-level and institution-level access boundaries.
+- Referral workflow gating based on recorded consent.
+
+The system does not automatically assess risk, make safeguarding decisions, send external referrals or issue emergency notifications.
+
+### v0.3.4 — Learning Library
+
+Introduces a central learning-resource catalogue supporting:
+
+- Learning categories.
+- Resource search and discovery.
+- Resource details and metadata.
+- Uploaded documents.
+- External learning-resource links.
+- Draft, published and archived resource states.
+- Resource administration and permission-controlled management.
+- Programme-wide and institution-scoped resource visibility.
+- Private Supabase Storage for uploaded documents.
+- Backend-authorised document access.
+
+Initial supported document formats:
+- PDF
+- DOCX
+- PPTX
+
+Maximum configured upload size: 10 MB.
+
+The Learning Library is intended for approved educational and gender-transformative learning materials. It must not be used to store GBV case records or confidential participant information.
+
+### Demonstration Login Experience
+
+The sign-in screen includes a public Demonstration Accounts panel.
+
+It provides:
+- Six role-labelled fictional accounts.
+- One shared demonstration password.
+- Account selection to populate the sign-in form.
+- Password visibility and copy controls.
+
+The panel is intended for proposal evaluation and demonstrator access. It must only be enabled where the accounts contain synthetic data and have appropriately limited permissions.
+
+## 4. Demonstration Accounts
+
+Shared demonstration password:
+
+`ChangeThisDemoPassword!`
+
+| Role | Email |
+|---|---|
+| Member | `member@gtdhub.demo` |
+| Mentor | `mentor@gtdhub.demo` |
+| Moderator | `moderator@gtdhub.demo` |
+| Case Handler | `casehandler@gtdhub.demo` |
+| Organisation Administrator | `orgadmin@gtdhub.demo` |
+| Programme Administrator | `programmeadmin@gtdhub.demo` |
+
+These are fictional demonstration accounts. The password must not be reused for real accounts or production staff accounts.
+
+For local initial seeding, configure `DEMO_DEFAULT_PASSWORD` before running the seed command. The seed command does not reset existing accounts. Existing account credentials must be verified separately.
+
+## 5. Local Development Setup
+
+### Prerequisites
+- Node.js and npm.
+- Python.
+- PostgreSQL.
+- Git.
+
+### Frontend setup
+
+From the repository root:
 
 ```powershell
 npm ci
@@ -29,124 +187,334 @@ Create `.env.local`:
 VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-Run:
+Start the frontend:
 
 ```powershell
 npm run dev
 ```
 
-Verify:
+Run verification:
 
 ```powershell
 npm run typecheck
 npm run build
 ```
 
-## Backend setup
+### Backend setup
 
-In a second PowerShell terminal:
+Open a second PowerShell terminal:
 
 ```powershell
 cd backend
+
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+
 pip install -r requirements-dev.txt
+```
+
+Configure `backend/.env` using `backend/.env.example` as a reference.
+
+Configure `DATABASE_URL` to a dedicated PostgreSQL database.
+
+Apply migrations:
+
+```powershell
 alembic upgrade head
+```
+
+Seed demonstration accounts when required:
+
+```powershell
 python -m app.seed_demo_users
+```
+
+Start the API:
+
+```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-API docs: `http://127.0.0.1:8000/docs`
+Local API documentation:
 
-Configure `DATABASE_URL` to a dedicated PostgreSQL database as shown in `backend/.env.example`. SQLite is not supported.
+`http://127.0.0.1:8000/docs`
 
-## Demo logins
+### Backend tests
 
-Default local password: `GtdHubDemo!2026`
+Use a dedicated PostgreSQL test database:
 
-| Role | Email |
-|---|---|
-| Member | `member@gtdhub.demo` |
-| Mentor | `mentor@gtdhub.demo` |
-| Moderator | `moderator@gtdhub.demo` |
-| Case Handler | `casehandler@gtdhub.demo` |
-| Organisation Administrator | `orgadmin@gtdhub.demo` |
-| Programme Administrator | `programmeadmin@gtdhub.demo` |
+```powershell
+$env:TEST_DATABASE_URL = "postgresql+psycopg://.../gtdhub_test"
+python -m pytest -q
+```
 
-Set `DEMO_DEFAULT_PASSWORD` before the first seed to use a different password. The seed command does not reset existing accounts.
+The test database must be separate from production. Never point test fixtures at the production database.
 
-## v0.2.4 scope
+## 6. Environment Configuration and Secrets
 
-- Institutions, users and revocable login sessions.
-- Argon2 password hashing.
-- Login, current-user and logout endpoints.
-- Six seeded fictional role accounts.
-- Authenticated access to demonstration overview and mentor APIs.
-- Role-aware frontend navigation and role-specific landing destinations.
-- Login session restored on refresh.
+### Backend configuration
 
-This release does not yet implement the complete permission matrix for each business module, user administration UI, password reset, multi-factor authentication, or production session hardening. Those are subsequent milestones.
+Configure the following through local backend environment variables or the backend hosting provider:
 
-## Deploy
+- `DATABASE_URL`
+- `CASE_ENCRYPTION_KEY`
+- `CASE_ENCRYPTION_KEY_VERSION`
+- `CASE_AUDIT_HMAC_KEY`
+- `REQUIRE_HTTPS`
+- `CORS_ORIGINS`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_STORAGE_BUCKET`
 
-### GitHub Pages
-The workflow `.github/workflows/deploy.yml` builds and deploys the frontend under `/gtd-hub-demo/`. Set `VITE_API_BASE_URL` as a GitHub Actions build variable/secret for the deployed API URL. Configure the API's `CORS_ORIGINS` to include `https://gtcharis.github.io`.
+The Supabase configuration uses:
 
-### Railway
-Set the backend service root directory to `/backend`, attach PostgreSQL, configure `DATABASE_URL` and `CORS_ORIGINS`. The Docker image applies Alembic migrations before starting the API. Run `python -m app.seed_demo_users` once in the Railway shell.
+```env
+SUPABASE_URL=https://<your-project-ref>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<server-side-secret-key>
+SUPABASE_STORAGE_BUCKET=gtdhub-learning-resources
+```
 
-## Security note
+The Supabase secret key must remain server-side. Never place it in frontend environment variables, source code, documentation, ZIP archives or GitHub commits.
 
-This is a proposal demonstrator. Browser storage is used for bearer-token persistence because the frontend and API are hosted on separate origins. This is not the recommended final production session architecture. Production deployment requires security review, secure session design, rate limiting, account recovery, audit logging, safeguarding governance and independent testing. Never enter real GBV reports or sensitive personal information.
+### Case encryption and audit keys
 
+The following are separate, independently generated 32-byte secrets:
 
-## v0.3.2 — Support, Safe Reporting and Secure Case Data
+- `CASE_ENCRYPTION_KEY`: AES-256-GCM encryption key.
+- `CASE_AUDIT_HMAC_KEY`: HMAC-SHA-256 audit-chain key.
 
-### Secure configuration (mandatory for case operations)
-
-Set these as backend hosting secrets (Railway Variables in the hosted deployment). Do not commit actual values, place them in the frontend, or store them in PostgreSQL:
-
-- `CASE_ENCRYPTION_KEY`: base64url encoding of an independently generated 32-byte AES-256 key.
-- `CASE_ENCRYPTION_KEY_VERSION`: key version label, initially `v1`.
-- `CASE_AUDIT_HMAC_KEY`: base64url encoding of a separate, independently generated 32-byte HMAC key.
-- `REQUIRE_HTTPS=true` in production behind the HTTPS-terminating proxy.
-
-Generate two independent keys locally with Python (do not paste generated values into source control):
+Generate each independently:
 
 ```powershell
 python -c "import secrets,base64; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('='))"
 ```
 
-Run the command twice, assigning one output to each secret. Keep partner-controlled recovery copies and document key rotation before operational data is ever entered. Missing or invalid keys cause case encryption/decryption and audit operations to fail closed.
+Run twice, storing the outputs securely in the appropriate environment variables.
 
-### Implemented API surface
+Maintain partner-controlled recovery copies and document key rotation and recovery procedures before any operational data is introduced.
 
-- `GET /api/v1/support/services` — institution-filtered published support directory. Seeded entries are clearly illustrative and have no unverified phone numbers or referral contacts.
-- `POST /api/v1/cases` — authenticated submission of one of three predefined synthetic scenarios; no free-text narrative or contact details are accepted. Anonymous mode does not link the case record to the submitting account; authentication, network, device or hosting metadata may still exist outside the case store.
-- `GET /api/v1/cases` and `GET /api/v1/cases/{case_ref}` — restricted Case Handler (own institution) and Programme Administrator (programme-wide) access.
-- `POST /api/v1/cases/{case_ref}/actions` — human-led workflow state changes, consent grant and withdrawal, and referral gating. Referral cannot proceed without recorded consent.
-- `GET /api/v1/cases/{case_ref}/audit` — restricted audit event view.
+Missing or invalid cryptographic configuration must cause relevant case operations to fail closed.
 
-Case payloads use AES-256-GCM with a unique 96-bit nonce and associated data binding the ciphertext to the case reference, institution and schema version. Case payloads are not stored as plaintext. Audit events use an HMAC-SHA-256 hash chain and record minimal metadata, not narratives or contact information. PostgreSQL transaction advisory locking serialises chain appends.
+### Secret management rules
 
-### Migration and test
+- Never commit `.env`, `.env.local` or other environment files containing actual secrets.
+- Never put backend secrets in frontend code.
+- Never include actual credentials in release ZIP files.
+- Use Railway Variables for hosted backend secrets.
+- Rotate compromised credentials immediately.
+- Keep independent backups of encryption and audit keys under approved partner-controlled arrangements.
 
-```powershell
-cd backend
-alembic upgrade head
-$env:TEST_DATABASE_URL = "postgresql+psycopg://.../gtdhub_test"
-pytest
+## 7. Hosting and Deployment Architecture
+
+The current demonstrator uses three principal hosting components.
+
+### Frontend — GitHub Pages
+
+Live application:
+
+`https://gtcharis.github.io/gtd-hub-demo/`
+
+Source repository:
+
+`https://github.com/gtcharis/gtd-hub-demo`
+
+The GitHub Actions workflow `.github/workflows/deploy.yml` builds and deploys the frontend under `/gtd-hub-demo/`.
+
+Configure the GitHub Actions build variable:
+
+```env
+VITE_API_BASE_URL=https://gtdhubapi-production.up.railway.app
 ```
 
-`TEST_DATABASE_URL` must point to a dedicated PostgreSQL database whose name contains `test`; the test fixture drops and recreates its tables. Never point it at production. Tests cover encryption/authentication, institution-scoped case access, synthetic-only submission, and consent gating/withdrawal.
+### Backend — Railway
 
-### Release boundary and outstanding production gates
+Production API:
 
-This is a secure synthetic demonstrator, not a live GBV intake service. It does not accept free-text disclosures or real contact details, send referrals, issue emergency alerts, or make safeguarding decisions. Directory contacts and the one-hour escalation protocol must be approved and configured by FAWEZI/BUSE and participating HEIs. Production also remains blocked on staff/admin MFA, partner-approved retention/deletion and incident-response procedures, independent OWASP ASVS/security testing, hosting/back-up encryption evidence, key custody/rotation and recovery arrangements, and review of the separate October 2026 developer Technical Paper. Do not enter real case data.
+`https://gtdhubapi-production.up.railway.app`
 
+Swagger documentation:
 
-## v0.3.3 — Full Case Management (development)
+`https://gtdhubapi-production.up.railway.app/docs`
 
-The v0.3.3 development line extends the v0.3.2 encrypted reporting foundation with institution-scoped case queues, handler assignment and assignment history, human-validated workflow transitions, human-set priority, encrypted structured activity notes, and case audit inspection. See `docs/releases/V0.3.3-CASE-MANAGEMENT.md` and `docs/architecture/CASE-MANAGEMENT-V0.3.3.md`.
+Railway service:
+- Service: `gtd_hub_api`
+- Root directory: `/backend`
+- PostgreSQL database attached.
+- Backend secrets configured through Railway Variables.
+- Database migrations applied through Alembic.
 
-This remains a synthetic-data demonstrator. It does not provide live safeguarding operations, automated risk decisions, external referrals or emergency notifications. MFA, partner-controlled key custody/recovery, production TLS and encrypted-backup verification, independent security testing, and partner-approved operational protocols remain release gates.
+Configure `CORS_ORIGINS` to include:
+
+`https://gtcharis.github.io`
+
+### Learning documents — Supabase Storage
+
+- Private storage bucket: `gtdhub-learning-resources`.
+- Resource metadata is maintained in Railway PostgreSQL.
+- Document binaries are stored in Supabase Storage.
+- The backend uses its server-side Supabase secret key to authorise storage operations.
+- Short-lived signed URLs are used for authorised document access.
+
+The Supabase project region and data-location arrangements must be assessed and approved by the project partners before any real participant or sensitive operational data is stored.
+
+### Production topology
+
+```text
+User browser / installed PWA
+          |
+          v
+GitHub Pages
+React + Vite + TypeScript
+          |
+          | HTTPS API requests
+          v
+Railway
+FastAPI application
+          |
+          +------ PostgreSQL
+          |       Users, roles, cases,
+          |       audit records, resources
+          |
+          +------ Supabase Storage
+                  Private learning documents
+```
+
+## 8. API Documentation
+
+The backend exposes OpenAPI documentation through FastAPI Swagger UI.
+
+Production:
+
+`https://gtdhubapi-production.up.railway.app/docs`
+
+Local:
+
+`http://127.0.0.1:8000/docs`
+
+The API includes authentication, mentorship, community, support, secure case management and Learning Library functionality.
+
+API documentation is a demonstrator interface and does not replace formal API specifications, security testing or operational documentation.
+
+## 9. Security and Safeguarding Boundaries
+
+The demonstrator includes several security foundations:
+
+- Argon2 password hashing.
+- Revocable opaque bearer sessions.
+- Role-based access control.
+- Institution-scoped access restrictions.
+- AES-256-GCM encrypted case payloads.
+- HMAC-based tamper-evident audit events.
+- Recorded consent and referral gating.
+- Private learning-document storage.
+- Backend-controlled storage access.
+- Synthetic demonstration data.
+
+### Outstanding production requirements
+
+The demonstrator is not certified as production-ready or formally security-compliant.
+
+Before operational deployment, the programme partners must address:
+
+- MFA for all staff and administrator accounts.
+- Production session architecture and hardening.
+- Rate limiting and account recovery.
+- Independent OWASP Top 10 and ASVS security testing.
+- Critical and high-risk vulnerability remediation.
+- TLS and encrypted-backup verification.
+- Partner-controlled encryption-key custody, recovery and rotation.
+- Approved data-retention and deletion policies.
+- Incident response and breach-notification procedures.
+- Approved safeguarding protocols and institutional responsibilities.
+- Verified support and referral contacts.
+- Emergency escalation arrangements and response times.
+- Accessibility testing against WCAG 2.1 AA.
+- Hosting, data-residency and cross-border processing review.
+- Review of the separate October 2026 developer Technical Paper referenced by the TOR.
+
+The platform records and supports human-led workflows. It does not replace institutional GBV case-management procedures or professional safeguarding judgement.
+
+## 10. Development and Release Discipline
+
+Recommended development sequence:
+
+1. Inspect the current baseline.
+2. Define release scope and migration impact.
+3. Implement backend and frontend changes.
+4. Apply migrations locally.
+5. Run backend tests against PostgreSQL.
+6. Run frontend typecheck and production build.
+7. Conduct browser-based role and workflow testing.
+8. Review security-sensitive changes.
+9. Inspect Git status and confirm secrets are excluded.
+10. Commit and push only after verification.
+11. Deploy the backend and frontend independently.
+12. Perform production smoke tests.
+
+Do not include `.env`, `.venv`, `node_modules`, `dist`, caches, local databases or secret-bearing archives in source-control commits or release packages.
+
+## 11. Repository Structure
+
+```text
+gtd-hub-demo/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── models.py
+│   │   ├── role_policy.py
+│   │   ├── learning_storage.py
+│   │   └── main.py
+│   ├── migrations/
+│   │   └── versions/
+│   ├── tests/
+│   ├── requirements.txt
+│   └── .env.example
+├── docs/
+│   ├── releases/
+│   ├── architecture/
+│   └── GTD-HUB-v0.3.4-LEARNING-LIBRARY.md
+├── public/
+├── src/
+│   ├── app/
+│   ├── features/
+│   │   ├── auth/
+│   │   ├── learning/
+│   │   └── ...
+│   ├── pages/
+│   ├── services/
+│   └── styles/
+├── .github/
+│   └── workflows/
+├── package.json
+└── README.md
+```
+
+## 12. Ownership and Production Handover
+
+The proposed production handover should include:
+
+- Source code and repository access.
+- System architecture documentation.
+- Database ERD and data dictionary.
+- API and integration documentation.
+- Role and permission matrix.
+- Case-data security and encryption documentation.
+- Learning-resource storage documentation.
+- Deployment and environment configuration guides.
+- Backup, restoration and disaster-recovery procedures.
+- Security testing and remediation reports.
+- Administrator and user manuals.
+- Training materials and handover records.
+
+FAWEZI, BUSE and participating institutions must agree on ownership, operational responsibilities, data governance, hosting, support and maintenance arrangements.
+
+---
+
+**Project:** Gender-Transformative Digital Hub (GTD Hub)  
+**Programme:** PROGEN-Hub for STEM  
+**Current baseline:** v0.3.4 — Learning Library  
+**Repository:** https://github.com/gtcharis/gtd-hub-demo  
+**Demonstrator:** https://gtcharis.github.io/gtd-hub-demo/  
+**API documentation:** https://gtdhubapi-production.up.railway.app/docs
+
+**Important:** This is a synthetic-data proposal demonstrator, not an operational GBV reporting or case-management service.
