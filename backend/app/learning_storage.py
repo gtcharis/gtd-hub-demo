@@ -32,7 +32,6 @@ class SupabaseStorage:
     def _headers(self, content_type="application/json"):
         return {
             "apikey": self.key,
-            "Authorization": f"Bearer {self.key}",
             "Content-Type": content_type,
         }
 
