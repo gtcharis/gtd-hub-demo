@@ -3345,3 +3345,161 @@ select:focus-visible {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+
+
+.auth-demo-access {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid #e3d9f2;
+  border-radius: 16px;
+  background: #fcfaff;
+}
+
+.auth-demo-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.auth-demo-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #8514bb;
+  background: #f1e5fb;
+}
+
+.auth-demo-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 750;
+  color: #171044;
+}
+
+.auth-demo-heading p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #69738a;
+}
+
+.auth-demo-password {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid #e7ddf1;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.auth-demo-password > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.auth-demo-label {
+  font-size: 11px;
+  color: #77718b;
+}
+
+.auth-demo-password strong {
+  font-size: 13px;
+  color: #25124e;
+  overflow-wrap: anywhere;
+}
+
+.auth-demo-password-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-demo-password-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #7614aa;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.auth-demo-account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-demo-account {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid #eee8f5;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.auth-demo-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.auth-demo-account-info strong {
+  font-size: 13px;
+  color: #241747;
+}
+
+.auth-demo-account-info span {
+  font-size: 11px;
+  color: #77718b;
+  overflow-wrap: anywhere;
+}
+
+.auth-demo-select {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid #d9c5ec;
+  border-radius: 8px;
+  color: #7513a8;
+  background: #faf6ff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-demo-select:hover {
+  background: #f1e5fb;
+}
+
+.auth-demo-disclaimer {
+  margin: 15px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #77718b;
+}
+
+@media (max-width: 480px) {
+  .auth-demo-access {
+    padding: 14px;
+  }
+
+  .auth-demo-account {
+    align-items: flex-start;
+  }
+
+  .auth-demo-select {
+    padding: 7px 8px;
+  }
+}
