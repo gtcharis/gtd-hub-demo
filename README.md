@@ -1,8 +1,10 @@
 # GTD Hub — Gender-Transformative Digital Hub
 
-**Current development target: v0.3.5 — Administration, Institutional Insights & M&E (implementation in progress)**
+**Current demonstrator baseline: v0.3.5 — Administration, Institutional Insights & M&E**
 
 A mobile-first, responsive and installable Progressive Web Application (PWA) demonstrator for the Gender-Transformative Digital Hub (GTD Hub), supporting the PROGEN-Hub for STEM programme.
+
+---
 
 ## 1. Demonstrator Boundary
 
@@ -14,17 +16,21 @@ The platform demonstrates digital workflows and technical capabilities. Safeguar
 
 All support-directory entries and demonstration scenarios must be treated as illustrative unless verified and approved by FAWEZI, BUSE and the relevant participating institutions.
 
+The demonstrator is intended to support technical evaluation, workflow demonstration and further product development. It does not, by itself, establish operational readiness or formal compliance with the programme's security and safeguarding requirements.
+
 ## 2. Technology Stack
 
 ### Frontend
+
 - React 18
 - TypeScript
 - Vite
 - Tailwind CSS
 - Lucide React
-- PWA via `vite-plugin-pwa`
+- Progressive Web Application functionality via `vite-plugin-pwa`
 
 ### Backend
+
 - Python FastAPI
 - SQLAlchemy
 - Alembic database migrations
@@ -33,6 +39,7 @@ All support-directory entries and demonstration scenarios must be treated as ill
 - Revocable opaque bearer-token sessions
 
 ### File storage
+
 - Supabase Storage
 - Private `gtdhub-learning-resources` bucket
 - Backend-authorised, short-lived signed access URLs
@@ -40,9 +47,10 @@ All support-directory entries and demonstration scenarios must be treated as ill
 
 **PostgreSQL is required for all environments and tests. SQLite is not supported.**
 
-## 3. Current Demonstrator Capabilities
+## 3. Demonstrator Capabilities
 
 ### v0.2.4 — Authentication Foundation
+
 - Institutions, users and revocable login sessions.
 - Argon2 password hashing.
 - Login, current-user and logout endpoints.
@@ -52,24 +60,28 @@ All support-directory entries and demonstration scenarios must be treated as ill
 - Login session restoration on refresh.
 
 ### v0.2.5 — RBAC Foundation
+
 - Role-based access control foundation.
 - Permission-aware navigation and backend authorisation.
 - Institutional access boundaries.
 - Role-specific capabilities and access restrictions.
 
 ### v0.3.0 — Mentorship
+
 - Mentor directory and profiles.
 - Mentorship discovery and profile presentation.
 - Role-aware mentorship access.
 - Demonstration mentor records.
 
 ### v0.3.1 — Community
+
 - Community functionality and associated role-aware access.
 - Demonstration community experience.
 
 ### v0.3.2 — Support, Safe Reporting and Secure Case Data
 
 **Support directory**
+
 - Psychosocial Support.
 - Health Services.
 - Legal Information and Assistance.
@@ -78,6 +90,7 @@ All support-directory entries and demonstration scenarios must be treated as ill
 - Searchable support information and expandable service details.
 
 **Safe reporting**
+
 - Submission of predefined synthetic scenarios.
 - Anonymous and identified demonstration modes.
 - Submission receipts.
@@ -85,6 +98,7 @@ All support-directory entries and demonstration scenarios must be treated as ill
 - Encrypted case payload persistence.
 
 **Secure case data**
+
 - AES-256-GCM authenticated encryption.
 - Unique 96-bit nonces.
 - Associated data binding encrypted payloads to case references, institutions and schema versions.
@@ -126,6 +140,7 @@ Introduces a central learning-resource catalogue supporting:
 - Backend-authorised document access.
 
 Initial supported document formats:
+
 - PDF
 - DOCX
 - PPTX
@@ -139,6 +154,7 @@ The Learning Library is intended for approved educational and gender-transformat
 The sign-in screen includes a public Demonstration Accounts panel.
 
 It provides:
+
 - Six role-labelled fictional accounts.
 - One shared demonstration password.
 - Account selection to populate the sign-in form.
@@ -146,30 +162,116 @@ It provides:
 
 The panel is intended for proposal evaluation and demonstrator access. It must only be enabled where the accounts contain synthetic data and have appropriately limited permissions.
 
-## 3A. Post-Submission Demonstrator Enhancements
+---
 
-The following capabilities were added or are being developed after the original consultancy application was submitted. They are demonstrator enhancements intended to make the technical demonstration more useful; they should not be interpreted as features promised in the original application submission.
+## 4. Post-Proposal Submission Demonstrator Enhancements
+
+**Important distinction:** The following enhancements were implemented after the original consultancy proposal submission. They represent additional product development and improvements to the proposal demonstrator. They should not be interpreted as features promised in, or included in the original proposal submission.
 
 ### v0.3.4 — Learning Library enhancement
+
 - Learning catalogue with categories, search and resource metadata.
 - Support for approved document uploads and external learning links.
 - Draft, published and archived resource states.
 - Private Supabase Storage with backend-authorised access.
 
-### v0.3.5 — Administration, Institutional Insights & M&E enhancement
-- Administrative dashboard using available database records rather than illustrative headline figures.
-- User account administration, role assignment and activation/deactivation.
-- Institution creation, editing and activation/deactivation for Programme Administrators.
-- Institution-scoped access for Organisation Administrators and programme-wide access for Programme Administrators.
-- Administrative audit visibility for account and institution changes.
-- De-identified aggregate indicators for user accounts, mentorship, community activity and published learning resources.
-- Aggregate CSV export for M&E review.
+### v0.3.5 — Administration, Institutional Insights and M&E
 
-The v0.3.5 indicators describe records available in the demonstrator. They are not participant outcome measures, impact findings or verified programme M&E results. GBV case narratives, contact details and identifiable case-level information are excluded from dashboards and M&E exports. Human personnel retain all safeguarding decision-making authority.
+Introduces a dedicated administration and programme-monitoring experience.
 
-The v0.3.4 learning-resource deletion interface has a known delayed-refresh behaviour and is deferred for a later correction; it is not represented as fixed in v0.3.5.
+**Administrative dashboard**
 
-## 4. Demonstration Accounts
+- Live summary counts based on available demonstrator database records.
+- Account and active-account statistics.
+- Institution counts within the administrator's authorised scope.
+- Mentorship and published learning-resource indicators.
+
+**User and role management**
+
+- User account creation.
+- User listing and search.
+- Role assignment and updates.
+- Account activation and deactivation.
+- Institution assignment within authorised administrative scope.
+- Session revocation following relevant account-access changes.
+
+**Institution management**
+
+- Institution creation.
+- Institution details and status management.
+- Institution activation and deactivation.
+- Programme Administrator oversight across institutions.
+
+**Administrative access boundaries**
+
+- Organisation Administrators are restricted to their own institution.
+- Programme Administrators have programme-wide administrative access.
+- Ordinary users cannot access administrative endpoints.
+- User and institution changes are subject to backend authorisation and validation.
+
+**Administrative audit trail**
+
+- Visibility of recorded administrative events.
+- Actor, action, target, timestamp and institution context.
+- Recording of administrative actions such as report exports and account or institution management activities.
+
+**Institutional insights and M&E**
+
+- De-identified aggregate indicators.
+- Registered and active account counts.
+- Mentorship indicators.
+- Community activity indicators.
+- Published learning-resource indicators.
+- Programme-wide or institution-scoped views, according to the administrator's permissions.
+- CSV export for further M&E review.
+
+**Small-cell suppression**
+
+The M&E implementation applies an initial small-cell suppression threshold of five:
+
+- Counts below five, including zero, are suppressed.
+- Counts of five or more may be displayed.
+- Suppressed CSV values are labelled rather than exported as small numerical counts.
+- The same suppression principle is applied to the relevant insight and export outputs.
+
+The threshold is an initial demonstrator safeguard. It must be reviewed and formally approved by FAWEZI and BUSE before operational M&E use. Suppression alone does not guarantee anonymity, particularly where datasets can be combined or repeatedly queried.
+
+**Safeguarding and M&E boundaries**
+
+- GBV narratives are excluded from insights and M&E exports.
+- Identifiable case-level information and contact details are excluded.
+- Administrative statistics are not safeguarding risk scores.
+- The indicators describe records currently available in the demonstrator.
+- They do not measure participant outcomes, wellbeing, institutional change or programme impact.
+- Safeguarding decisions remain with authorised human personnel.
+
+### v0.3.5 Release Verification
+
+The local release verification recorded:
+
+| Verification | Result |
+|---|---|
+| Backend Python compilation | Passed |
+| Backend automated tests | 58 passed |
+| Frontend TypeScript/Vite production build | Passed |
+| PWA asset generation | Passed |
+| Git staged-diff whitespace check | Passed |
+
+The backend test run reported one non-blocking Starlette/AnyIO deprecation warning.
+
+The v0.3.5 implementation was committed and pushed to `main`.
+
+**Release commit:** `fc14de3` — `feat: release GTD Hub v0.3.5 administration and M&E`
+
+The administration and programme-insights interfaces were also checked in the local and hosted demonstrator environments.
+
+### Known deferred issue
+
+The v0.3.4 learning-resource deletion interface has a known delayed-refresh behaviour: a deleted resource may remain visible until the page is refreshed. This was deferred for a later correction and is not represented as fixed in v0.3.5.
+
+---
+
+## 5. Demonstration Accounts
 
 Shared demonstration password:
 
@@ -188,9 +290,12 @@ These are fictional demonstration accounts. The password must not be reused for 
 
 For local initial seeding, configure `DEMO_DEFAULT_PASSWORD` before running the seed command. The seed command does not reset existing accounts. Existing account credentials must be verified separately.
 
-## 5. Local Development Setup
+---
+
+## 6. Local Development Setup
 
 ### Prerequisites
+
 - Node.js and npm.
 - Python.
 - PostgreSQL.
@@ -273,7 +378,9 @@ python -m pytest -q
 
 The test database must be separate from production. Never point test fixtures at the production database.
 
-## 6. Environment Configuration and Secrets
+---
+
+## 7. Environment Configuration and Secrets
 
 ### Backend configuration
 
@@ -327,7 +434,9 @@ Missing or invalid cryptographic configuration must cause relevant case operatio
 - Rotate compromised credentials immediately.
 - Keep independent backups of encryption and audit keys under approved partner-controlled arrangements.
 
-## 7. Hosting and Deployment Architecture
+---
+
+## 8. Hosting and Deployment Architecture
 
 The current demonstrator uses three principal hosting components.
 
@@ -335,11 +444,11 @@ The current demonstrator uses three principal hosting components.
 
 Live application:
 
-`https://gtcharis.github.io/gtd-hub-demo/`
+https://gtcharis.github.io/gtd-hub-demo/
 
 Source repository:
 
-`https://github.com/gtcharis/gtd-hub-demo`
+https://github.com/gtcharis/gtd-hub-demo
 
 The GitHub Actions workflow `.github/workflows/deploy.yml` builds and deploys the frontend under `/gtd-hub-demo/`.
 
@@ -353,13 +462,14 @@ VITE_API_BASE_URL=https://gtdhubapi-production.up.railway.app
 
 Production API:
 
-`https://gtdhubapi-production.up.railway.app`
+https://gtdhubapi-production.up.railway.app
 
 Swagger documentation:
 
-`https://gtdhubapi-production.up.railway.app/docs`
+https://gtdhubapi-production.up.railway.app/docs
 
 Railway service:
+
 - Service: `gtd_hub_api`
 - Root directory: `/backend`
 - PostgreSQL database attached.
@@ -402,23 +512,27 @@ FastAPI application
                   Private learning documents
 ```
 
-## 8. API Documentation
+---
+
+## 9. API Documentation
 
 The backend exposes OpenAPI documentation through FastAPI Swagger UI.
 
 Production:
 
-`https://gtdhubapi-production.up.railway.app/docs`
+https://gtdhubapi-production.up.railway.app/docs
 
 Local:
 
-`http://127.0.0.1:8000/docs`
+http://127.0.0.1:8000/docs
 
-The API includes authentication, mentorship, community, support, secure case management and Learning Library functionality.
+The API includes authentication, mentorship, community, support, secure case management, Learning Library and administration functionality.
 
 API documentation is a demonstrator interface and does not replace formal API specifications, security testing or operational documentation.
 
-## 9. Security and Safeguarding Boundaries
+---
+
+## 10. Security and Safeguarding Boundaries
 
 The demonstrator includes several security foundations:
 
@@ -431,6 +545,9 @@ The demonstrator includes several security foundations:
 - Recorded consent and referral gating.
 - Private learning-document storage.
 - Backend-controlled storage access.
+- Administrative audit events.
+- Session revocation following relevant administrative access changes.
+- De-identified aggregate reporting with small-cell suppression.
 - Synthetic demonstration data.
 
 ### Outstanding production requirements
@@ -453,11 +570,14 @@ Before operational deployment, the programme partners must address:
 - Emergency escalation arrangements and response times.
 - Accessibility testing against WCAG 2.1 AA.
 - Hosting, data-residency and cross-border processing review.
+- Formal approval of the M&E suppression threshold and reporting rules.
 - Review of the separate October 2026 developer Technical Paper referenced by the TOR.
 
 The platform records and supports human-led workflows. It does not replace institutional GBV case-management procedures or professional safeguarding judgement.
 
-## 10. Development and Release Discipline
+---
+
+## 11. Development and Release Discipline
 
 Recommended development sequence:
 
@@ -476,7 +596,9 @@ Recommended development sequence:
 
 Do not include `.env`, `.venv`, `node_modules`, `dist`, caches, local databases or secret-bearing archives in source-control commits or release packages.
 
-## 11. Repository Structure
+---
+
+## 12. Repository Structure
 
 ```text
 gtd-hub-demo/
@@ -512,7 +634,9 @@ gtd-hub-demo/
 └── README.md
 ```
 
-## 12. Ownership and Production Handover
+---
+
+## 13. Ownership and Production Handover
 
 The proposed production handover should include:
 
@@ -533,11 +657,21 @@ FAWEZI, BUSE and participating institutions must agree on ownership, operational
 
 ---
 
-**Project:** Gender-Transformative Digital Hub (GTD Hub)  
-**Programme:** PROGEN-Hub for STEM  
-**Current baseline:** v0.3.4 — Learning Library  
-**Repository:** https://github.com/gtcharis/gtd-hub-demo  
-**Demonstrator:** https://gtcharis.github.io/gtd-hub-demo/  
+## 14. Project Information
+
+**Project:** Gender-Transformative Digital Hub (GTD Hub)
+
+**Programme:** PROGEN-Hub for STEM
+
+**Current demonstrator baseline:** v0.3.5 — Administration, Institutional Insights & M&E
+
+**Post-proposal enhancements:** v0.3.4 Learning Library and v0.3.5 Administration and M&E
+
+**Repository:** https://github.com/gtcharis/gtd-hub-demo
+
+**Demonstrator:** https://gtcharis.github.io/gtd-hub-demo/
+
 **API documentation:** https://gtdhubapi-production.up.railway.app/docs
+
 
 **Important:** This is a synthetic-data proposal demonstrator, not an operational GBV reporting or case-management service.
