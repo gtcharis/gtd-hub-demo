@@ -238,3 +238,28 @@ class AdminAuditEvent(Base):
     institution_id: Mapped[int | None] = mapped_column(ForeignKey("institutions.id"), nullable=True, index=True)
     details_json: Mapped[str] = mapped_column(String(1200), nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+
+
+class HubActivity(Base):
+    __tablename__ = "hub_activities"
+    __table_args__ = (
+        CheckConstraint("status IN ('draft', 'published', 'cancelled')", name="ck_hub_activities_status"),
+        CheckConstraint("end_at > start_at", name="ck_hub_activities_valid_time_range"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(180), nullable=False)
+    description: Mapped[str] = mapped_column(String(1200), nullable=False, default="")
+    category: Mapped[str] = mapped_column(String(40), nullable=False, default="Community")
+    start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    venue: Mapped[str] = mapped_column(String(180), nullable=False, default="")
+    delivery_mode: Mapped[str] = mapped_column(String(20), nullable=False, default="in_person")
+    institution_id: Mapped[int | None] = mapped_column(ForeignKey("institutions.id"), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft", index=True)
+    created_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    updated_by_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    institution: Mapped[Institution | None] = relationship()
+    created_by: Mapped[User] = relationship(foreign_keys=[created_by_user_id])
+    updated_by: Mapped[User] = relationship(foreign_keys=[updated_by_user_id])

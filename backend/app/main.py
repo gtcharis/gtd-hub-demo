@@ -11,11 +11,12 @@ from app.api.case_routes import router as case_router
 from app.api.learning_routes import router as learning_router
 from app.api.admin_routes import router as admin_router
 from app.api.dashboard_routes import router as dashboard_router
+from app.api.activity_routes import router as activity_router
 
 app = FastAPI(
     title="GTD Hub Demonstrator API",
-    version="0.3.7",
-    description="Authenticated proposal demonstrator API. Fictional demonstration data only. v0.3.7 member engagement indicators and v0.3.6 role-aware database-backed overview dashboards; v0.3.5 administration, institutional insights and M&E; v0.3.4 learning library.",
+    version="0.3.8",
+    description="Authenticated proposal demonstrator API. Fictional demonstration data only. v0.3.7 member engagement indicators; v0.3.8 database-backed upcoming activities and v0.3.6 role-aware database-backed overview dashboards; v0.3.5 administration, institutional insights and M&E; v0.3.4 learning library.",
 )
 origins = [x.strip() for x in os.getenv(
     "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,https://gtcharis.github.io"
@@ -35,6 +36,7 @@ app.include_router(case_router, prefix="/api/v1")
 app.include_router(learning_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
 app.include_router(dashboard_router, prefix="/api/v1")
+app.include_router(activity_router, prefix="/api/v1")
 
 @app.middleware("http")
 async def enforce_https(request: Request, call_next):

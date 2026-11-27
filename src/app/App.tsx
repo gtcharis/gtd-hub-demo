@@ -42,7 +42,6 @@ import {
   DownloadIcon,
 } from "lucide-react";
 import {
-  activities,
   cases,
   discussions,
   metrics,

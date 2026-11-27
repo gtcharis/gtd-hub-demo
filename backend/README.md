@@ -90,3 +90,45 @@ New endpoints:
 - `GET /api/v1/mentorship/connections`
 
 Members can request mentorship from profiles at their own institution. Mentors can review requests addressed to their own profile. Accepting a request creates an active connection. Programme Administrators can view programme-wide mentorship records.
+
+
+## Upcoming activities
+
+The Overview page reads published activities from `GET /api/v1/activities/upcoming`.
+The response is ordered by start time and includes programme-wide activities plus
+activities scoped to the authenticated user's institution. Draft, cancelled and
+already-ended activities are not returned.
+
+Only Organisation Administrators and Programme Administrators can manage activities.
+Organisation Administrators can create and update activities for their own institution.
+Programme Administrators can manage programme-wide or institution-specific activities.
+
+Create an activity through Swagger (`/docs`) using `POST /api/v1/activities`:
+
+```json
+{
+  "title": "Mentorship Circle: Women in STEM",
+  "description": "A facilitated online mentorship session.",
+  "category": "Mentorship",
+  "start_at": "2026-12-10T15:00:00+02:00",
+  "end_at": "2026-12-10T16:00:00+02:00",
+  "venue": "Online",
+  "delivery_mode": "online",
+  "institution_id": null,
+  "status": "published"
+}
+```
+
+Use `institution_id: null` for programme-wide activities. Institution-scoped
+activities require an active institution ID. Activity timestamps must include
+a timezone, and the end time must be after the start time.
+
+Management endpoints:
+- `GET /api/v1/activities/manage` — list activities within the administrator's scope.
+- `POST /api/v1/activities` — create a draft or published activity.
+- `PATCH /api/v1/activities/{activity_id}` — update activity details or status.
+
+The public-facing Overview card displays only published future activities.
+
+
+Upcoming activities are database-backed in v0.3.8. Apply the new migration with `python -m alembic upgrade head` before starting the API.

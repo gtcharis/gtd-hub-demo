@@ -40,10 +40,9 @@ import {
   UserRound,
   Sparkles,
 } from "lucide-react";
-import { api } from "../services/api";
+import { api, type HubActivity } from "../services/api";
 import { useAuth } from "../features/auth/AuthContext";
 import {
-  activities,
   cases,
   discussions,
   mentors,
@@ -205,6 +204,31 @@ export function Dashboard({
   apiState: "local" | "loading" | "connected" | "unavailable";
 }) {
   const member = role === "Member";
+  const [activities, setActivities] = useState<HubActivity[]>([]);
+  const [activitiesState, setActivitiesState] = useState<"loading" | "loaded" | "empty" | "unavailable">("loading");
+
+  useEffect(() => {
+    let active = true;
+    api.upcomingActivities()
+      .then((items) => {
+        if (!active) return;
+        setActivities(items);
+        setActivitiesState(items.length ? "loaded" : "empty");
+      })
+      .catch(() => {
+        if (!active) return;
+        setActivities([]);
+        setActivitiesState("unavailable");
+      });
+    return () => { active = false; };
+  }, [role]);
+
+  const formatActivityDate = (value: string) =>
+    new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(new Date(value));
+  const formatActivityTime = (start: string, end: string) => {
+    const time = (value: string) => new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(value));
+    return `${time(start)}–${time(end)}`;
+  };
   return (
     <div className="space-y-6">
       <section className="welcome-card">
@@ -308,17 +332,20 @@ export function Dashboard({
             <CalendarDays />
             <h2>Upcoming activities</h2>
           </div>
-          {activities.map((a) => (
-            <div className="activity-row" key={a.title}>
+          {activitiesState === "loading" && <p className="activity-empty" role="status">Loading upcoming activities…</p>}
+          {activitiesState === "unavailable" && <p className="activity-empty" role="status">Upcoming activities are temporarily unavailable.</p>}
+          {activitiesState === "empty" && <p className="activity-empty">There are no upcoming activities at the moment.</p>}
+          {activities.map((activity) => (
+            <div className="activity-row" key={activity.id}>
               <div className="date-box">
-                <b>{a.month}</b>
-                <strong>{a.date}</strong>
+                <b>{new Intl.DateTimeFormat("en-GB", { month: "short" }).format(new Date(activity.start_at)).toUpperCase()}</b>
+                <strong>{new Date(activity.start_at).getDate()}</strong>
               </div>
               <div>
-                <b>{a.title}</b>
-                <small>{a.meta}</small>
+                <b>{activity.title}</b>
+                <small>{formatActivityDate(activity.start_at)} · {formatActivityTime(activity.start_at, activity.end_at)} · {activity.delivery_mode === "online" ? "Online" : activity.venue || activity.institution_name}</small>
               </div>
-              <span className="tag">{a.type}</span>
+              <span className="tag">{activity.category}</span>
             </div>
           ))}
         </div>

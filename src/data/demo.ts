@@ -25,10 +25,7 @@ export const supportOptions = [
   { title: "Legal Information", description: "Your rights, reporting options and available legal support.", icon: "scale", tone: "cream" },
   { title: "Institutional Support", description: "Campus services, designated focal points and student support.", icon: "building", tone: "blue" }
 ];
-export const activities = [
-  { date: "26", month: "NOV", title: "Mentorship Circle: Women in STEM", meta: "Thu, 26 Nov · 15:00–16:00 · Online", type: "Mentorship" },
-  { date: "28", month: "NOV", title: "Campus Dialogue: Safe & Inclusive STEM Spaces", meta: "Sat, 28 Nov · 10:00–12:00 · Main Hall", type: "Learning" }
-];
+
 export const discussions = [
   { title: "Finding your voice in technical spaces", author: "Munashe · Member", replies: 18, category: "STEM journeys" },
   { title: "How did you choose your first research topic?", author: "Tendai · Member", replies: 9, category: "Research & learning" },

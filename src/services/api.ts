@@ -26,6 +26,19 @@ export type LearningResource = {
   created_at: string;
   updated_at: string;
 };
+export type HubActivity = {
+  id: number;
+  title: string;
+  description: string;
+  category: "Mentorship" | "Learning" | "Community" | "Programme";
+  start_at: string;
+  end_at: string;
+  venue: string;
+  delivery_mode: "online" | "in_person";
+  institution_id: number | null;
+  institution_name: string;
+  status: "draft" | "published" | "cancelled";
+};
 export type ApiHealth = {
   status: "ok" | "degraded";
   service: string;
@@ -134,6 +147,15 @@ export const api = {
       Array<{ id: number; name: string; code: string; is_active: boolean }>
     >("/api/v1/institutions"),
   dashboardOverview: () => request<DashboardOverview>("/api/v1/dashboard/overview"),
+  upcomingActivities: (limit = 4) => request<HubActivity[]>(`/api/v1/activities/upcoming?limit=${limit}`),
+  manageActivities: () => request<HubActivity[]>("/api/v1/activities/manage"),
+  createActivity: (payload: {
+    title: string; description: string; category: HubActivity["category"];
+    start_at: string; end_at: string; venue: string;
+    delivery_mode: HubActivity["delivery_mode"]; institution_id: number | null;
+    status: "draft" | "published";
+  }) => request<HubActivity>("/api/v1/activities", { method: "POST", body: JSON.stringify(payload) }),
+  updateActivity: (id: number, payload: Partial<Omit<HubActivity, "id" | "institution_name">>) => request<HubActivity>(`/api/v1/activities/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   adminDashboard: () => request<{
     scope: string; users_total: number; users_active: number; institutions_total: number;
     mentors_active: number; community_discussions: number; mentorship_connections: number;
