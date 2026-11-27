@@ -31,6 +31,29 @@ export type ApiHealth = {
   service: string;
   version: string;
 };
+export type MemberEngagement = {
+  engaged_members: number;
+  eligible_members: number;
+  percentage: number;
+  window_days: 30;
+  definition: string;
+  activity_types: string[];
+};
+export type DashboardOverview = {
+  role: string;
+  scope: string;
+  institution_id: number | null;
+  title: string;
+  description: string;
+  metrics: Array<{ label: string; value: number }>;
+  data_label: string;
+  case_data_included: false;
+  registered_users?: number;
+  mentorship_connections?: number;
+  resources_available?: number;
+  member_engagement?: MemberEngagement;
+  metric_scopes?: Record<string, string>;
+};
 export type LoginResult = {
   access_token: string;
   token_type: "bearer";
@@ -110,6 +133,7 @@ export const api = {
     request<
       Array<{ id: number; name: string; code: string; is_active: boolean }>
     >("/api/v1/institutions"),
+  dashboardOverview: () => request<DashboardOverview>("/api/v1/dashboard/overview"),
   adminDashboard: () => request<{
     scope: string; users_total: number; users_active: number; institutions_total: number;
     mentors_active: number; community_discussions: number; mentorship_connections: number;

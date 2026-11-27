@@ -1,6 +1,6 @@
 # GTD Hub — Gender-Transformative Digital Hub
 
-**Current demonstrator baseline: v0.3.5 — Administration, Institutional Insights & M&E**
+**Current demonstrator baseline: v0.3.6 — Role-aware Dynamic Overview Dashboards**
 
 A mobile-first, responsive and installable Progressive Web Application (PWA) demonstrator for the Gender-Transformative Digital Hub (GTD Hub), supporting the PROGEN-Hub for STEM programme.
 
@@ -268,6 +268,15 @@ The administration and programme-insights interfaces were also checked in the lo
 ### Known deferred issue
 
 The v0.3.4 learning-resource deletion interface has a known delayed-refresh behaviour: a deleted resource may remain visible until the page is refreshed. This was deferred for a later correction and is not represented as fixed in v0.3.5.
+
+### v0.3.6 — Role-aware Dynamic Overview Dashboards
+
+- Added an authenticated `/api/v1/dashboard/overview` endpoint for all six application roles.
+- Overview metrics are calculated from PostgreSQL records and tailored to the authenticated role.
+- Member and Mentor metrics are personal; Moderator and Case Handler metrics are institution-scoped; Organisation Administrator metrics are restricted to their institution; Programme Administrator metrics are programme-wide.
+- Case-related dashboard values are aggregate counts only. Case references, encrypted narratives, consent details and identifiable case-level data are excluded.
+- Frontend Overview cards now display the authenticated role's returned metrics. Illustrative headline metrics are no longer used as a fallback when the API is disconnected or unavailable.
+- Existing role navigation and default landing destinations are unchanged.
 
 ---
 
@@ -663,9 +672,9 @@ FAWEZI, BUSE and participating institutions must agree on ownership, operational
 
 **Programme:** PROGEN-Hub for STEM
 
-**Current demonstrator baseline:** v0.3.5 — Administration, Institutional Insights & M&E
+**Current demonstrator baseline:** v0.3.6 — Role-aware Dynamic Overview Dashboards
 
-**Post-proposal enhancements:** v0.3.4 Learning Library and v0.3.5 Administration and M&E
+**Post-proposal enhancements:** v0.3.4 Learning Library, v0.3.5 Administration and M&E, and v0.3.6 Role-aware Overview Dashboards
 
 **Repository:** https://github.com/gtcharis/gtd-hub-demo
 

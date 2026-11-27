@@ -47,7 +47,6 @@ import {
   cases,
   discussions,
   mentors,
-  metrics,
   navByRole,
   organisations,
   roles,
@@ -203,14 +202,14 @@ export function Dashboard({
   go: (p: string) => void;
   notify: (s: string) => void;
   overview: any;
-  apiState: "local" | "connected" | "unavailable";
+  apiState: "local" | "loading" | "connected" | "unavailable";
 }) {
   const member = role === "Member";
   return (
     <div className="space-y-6">
       <section className="welcome-card">
         <div className="welcome-text">
-          <p className="eyebrow">MONDAY, 23 NOVEMBER 2026</p>
+          <p className="eyebrow">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).toUpperCase()}</p>
           <h1>
             Good morning, <em>{displayName.split(" ")[0]}</em> 👋
           </h1>
@@ -227,41 +226,72 @@ export function Dashboard({
           </div>
         </div>
       </section>
+      {overview?.description && (
+        <div className="section-heading">
+          <h2>{overview.title || "Your overview"}</h2>
+          <p>{overview.description}</p>
+        </div>
+      )}
       <section className="metric-grid">
-        {metrics.map((m, i) => {
+        {(overview?.metrics || []).map((metric: { label: string; value: number }, i: number) => {
           const Icon = [
             Users,
             Handshake,
             BookOpen,
             ChartNoAxesColumnIncreasing,
-          ][i];
-          const values = overview
-            ? [
-                overview.members,
-                overview.mentorship_connections,
-                overview.resources,
-                `${overview.engagement_percent}%`,
-              ]
-            : null;
+          ][i % 4];
+          const tones = ["mint", "lilac", "cream", "rose"];
           return (
-            <div className={`metric-card ${m.tone}`} key={m.label}>
+            <div className={`metric-card ${tones[i % tones.length]}`} key={metric.label}>
               <Icon size={31} />
               <div>
-                <b>{values ? values[i] : m.value}</b>
-                <span>{m.label}</span>
+                <b>{metric.value.toLocaleString()}</b>
+                <span>{metric.label}</span>
               </div>
             </div>
           );
         })}
+        {apiState !== "connected" && (
+          <div className="panel-box" role="status">
+            {apiState === "loading"
+              ? "Loading your live overview…"
+              : apiState === "unavailable"
+                ? "Live overview metrics are temporarily unavailable. Please try again shortly."
+                : "Connect the GTD Hub API to load database-backed overview metrics."}
+          </div>
+        )}
       </section>
       <div className="metric-disclaimer">
-        <Info size={15} /> Metrics are illustrative demonstration data only.{" "}
-        {apiState === "connected"
-          ? "Read from demo API."
-          : apiState === "unavailable"
-            ? "API unavailable; local demo data shown."
-            : "Local demo data."}
+        <Info size={15} /> {overview?.data_label || "Overview figures are not currently loaded."}
+        {overview?.case_data_included === false ? " No case-level information is displayed." : ""}
       </div>
+      {member && overview?.member_engagement && (
+        <section aria-labelledby="member-engagement-heading">
+          <div className="section-heading">
+            <h2 id="member-engagement-heading">Member engagement</h2>
+            <p>Institution-level participation over the rolling last 30 days, alongside programme-wide account and mentorship totals.</p>
+          </div>
+          <div className="metric-grid">
+            <div className="metric-card mint">
+              <Users size={31} />
+              <div><b>{Number(overview.registered_users || 0).toLocaleString()}</b><span>Programme registered accounts</span></div>
+            </div>
+            <div className="metric-card lilac">
+              <Handshake size={31} />
+              <div><b>{Number(overview.mentorship_connections || 0).toLocaleString()}</b><span>Programme active mentorship connections</span></div>
+            </div>
+            <div className="metric-card cream">
+              <Activity size={31} />
+              <div><b>{Number(overview.member_engagement.engaged_members || 0).toLocaleString()}</b><span>Engaged members at your institution</span></div>
+            </div>
+            <div className="metric-card rose">
+              <ChartNoAxesColumnIncreasing size={31} />
+              <div><b>{Number(overview.member_engagement.percentage || 0).toLocaleString()}%</b><span>Institution engagement rate</span><small>{overview.member_engagement.engaged_members} of {overview.member_engagement.eligible_members} eligible members</small></div>
+            </div>
+          </div>
+          <p className="metric-disclaimer">Engagement means at least one recorded community discussion or reply, mentorship request, or mentorship connection in the last 30 days. Each member is counted once. Learning-resource views are not yet tracked.</p>
+        </section>
+      )}
       <section className="dashboard-middle">
         <div className="support-hero">
           <ShieldCheck size={48} />

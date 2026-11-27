@@ -142,7 +142,7 @@ export default function App() {
   const [organisation, setOrganisation] = useState(organisations[1]);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [apiState, setApiState] = useState<
-    "local" | "connected" | "unavailable"
+    "local" | "loading" | "connected" | "unavailable"
   >("local");
   const [apiOverview, setApiOverview] = useState<any>(null);
 
@@ -173,14 +173,34 @@ export default function App() {
   }, [authLoading, user, pathname, navigate]);
 
   useEffect(() => {
-    if (!apiConfigured || !user) return;
-    Promise.all([api.health(), api.demoOverview()])
-      .then(([, overview]) => {
+    if (!user || page !== "Overview") {
+      if (!user) {
+        setApiOverview(null);
+        setApiState("local");
+      }
+      return;
+    }
+    if (!apiConfigured) {
+      setApiOverview(null);
+      setApiState("local");
+      return;
+    }
+    let active = true;
+    setApiOverview(null);
+    setApiState("loading");
+    api.dashboardOverview()
+      .then((overview) => {
+        if (!active) return;
         setApiOverview(overview);
         setApiState("connected");
       })
-      .catch(() => setApiState("unavailable"));
-  }, [user?.id]);
+      .catch(() => {
+        if (!active) return;
+        setApiOverview(null);
+        setApiState("unavailable");
+      });
+    return () => { active = false; };
+  }, [user?.id, user?.role, user?.institution_id, page]);
 
   const notify = (message: string) => {
     setToast(message);

@@ -36,14 +36,15 @@ The seed script creates missing fictional demo users; it does not reset password
 
 ## Tests
 
-Tests require a dedicated PostgreSQL database. Never point `TEST_DATABASE_URL` at production.
+Tests require a dedicated PostgreSQL database. Never point `TEST_DATABASE_URL` at production. The test configuration loads `backend/.env` before reading `TEST_DATABASE_URL`; an explicitly set PowerShell environment variable takes precedence.
 
 ```powershell
+# Optional if TEST_DATABASE_URL is already set in backend/.env
 $env:TEST_DATABASE_URL="postgresql+psycopg://USER:PASSWORD@localhost:5432/gtdhub_test"
-python -m pytest
+python -m pytest -q
 ```
 
-The test fixture drops and recreates tables in the configured test database.
+The test fixture drops and recreates tables in the configured test database. The database name must contain `test`; production-like names are rejected.
 
 ## RBAC policy
 
